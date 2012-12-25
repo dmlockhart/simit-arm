@@ -1,9 +1,10 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(emulator/main.cpp)
-AM_INIT_AUTOMAKE(SimIt-ARM, 3.0)
+AC_INIT([SimIt-ARM], [3.0])
+AC_CONFIG_SRCDIR([emulator/main.cpp])
 AM_CONFIG_HEADER(config.h:config.h.in)
+AM_INIT_AUTOMAKE
 
 #if the user sets CXXFLAGS
 usr_CXXFLAGS=${CXXFLAGS+set}

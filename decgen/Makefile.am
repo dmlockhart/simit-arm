@@ -1,10 +1,10 @@
 
-DECLEX := scan_idef.l
-DECLEX_SRC := scan_idef.c
+DECLEX = scan_idef.l
+DECLEX_SRC = scan_idef.c
 
-DECPARSE := parse_idef.y
-DECPARSE_SRC := parse_idef.cpp
-DECPARSE_HDR := parse_idef.h
+DECPARSE = parse_idef.y
+DECPARSE_SRC = parse_idef.cpp
+DECPARSE_HDR = parse_idef.h
 
 #This happens to be a turbulent time for bison.
 #Older version 1.28 will generate parse_idef.cpp.h as the definition file.
@@ -68,7 +68,7 @@ HDRS = decode.h decode_table.h huffman.h decode_tree.h decode_theiling.h \
 
 EXTRA_DIST = $(DECLEX) $(DECPARSE)
 
-INCLUDES = -I..
+AM_CPPFLAGS = -I..
 
 CLEANFILES = $(DECPARSE_SRC) $(DECPARSE_HDR) $(DECLEX_SRC)
 

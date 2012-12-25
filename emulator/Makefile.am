@@ -1,9 +1,9 @@
 
-DECODER_GEN := $(top_builddir)/decgen/decgen32
-DECODER_HDR := arm_dec.h
-DECODER_DEF := arm_inst.def
-DECODER_HDR2 := arm_dec2.h
-DECODER_DEF2 := arm_inst2.def
+DECODER_GEN = $(top_builddir)/decgen/decgen32
+DECODER_HDR = arm_dec.h
+DECODER_DEF = arm_inst.def
+DECODER_HDR2 = arm_dec2.h
+DECODER_DEF2 = arm_inst2.def
 
 $(DECODER_HDR): $(DECODER_DEF)
 	$(DECODER_GEN) -i -g 0.25 -o $@ $<
@@ -12,12 +12,12 @@ $(DECODER_HDR2): $(DECODER_DEF2)
 	$(DECODER_GEN) -i -g 0.25 -o $@ $<
 
 
-CONFLEX := scan_conf.l
-CONFLEX_SRC := scan_conf.cpp
+CONFLEX = scan_conf.l
+CONFLEX_SRC = scan_conf.cpp
 
-CONFPARSE := parse_conf.y
-CONFPARSE_SRC := parse_conf.cpp
-CONFPARSE_HDR := parse_conf.hpp
+CONFPARSE = parse_conf.y
+CONFPARSE_SRC = parse_conf.cpp
+CONFPARSE_HDR = parse_conf.hpp
 
 $(CONFPARSE_SRC): $(CONFPARSE)
 	@YACC@ -d -p conf_ $^ -o $@

@@ -26,7 +26,7 @@ decomp_server_LDFLAGS = -ldl
 
 
 
-INCLUDES = -I$(top_srcdir)/emulator 
+AM_CPPFLAGS = -I$(top_srcdir)/emulator 
 include_HEADERS = arch_jit.hpp dyn_arm_emul.hpp build_dll.hpp
 
 lib_LIBRARIES = libdynarmemu.a
