@@ -17,6 +17,7 @@
 #include <pthread.h>
 #include <dlfcn.h>
 #include <unistd.h>
+#include <cstring>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>

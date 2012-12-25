@@ -19,6 +19,7 @@
 #include "misc.h"
 #include "simconf.h"
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 
 #define YYERROR_VERBOSE
@@ -33,7 +34,7 @@ using std::vector;
 extern processor_info_t *proc_info;
 extern const char *conf_path;
 
-void conf_error(char *);
+void conf_error(const char *);
 static vector<char> *convert_int_to_vchar(uint32_t);
 
 %}
@@ -47,8 +48,8 @@ static vector<char> *convert_int_to_vchar(uint32_t);
 	struct reginit_info_t *reg_t;
 }
 
-%token SEMI COLON COMMA EQUAL
-%token CPU MACH MEM MAP TYPE ADDR SIZE PRE FLE IMG ELF VAL REG
+/*%token SEMI COLON COMMA EQUAL*/
+/*%token CPU MACH MEM MAP TYPE ADDR SIZE PRE FLE IMG ELF VAL REG*/
 
 %token SEMI    ";"
 %token COLON   ":"
@@ -259,7 +260,7 @@ reg: REG COLON IDENT EQUAL HCONST SEMI {
 
 %%
 
-void conf_error (char *s)
+void conf_error (const char *s)
 {
 	fprintf(stderr, "Error parsing %s:\n", conf_path);
 	fprintf(stderr, "      %s near line %d\n", s, mylineno+1);

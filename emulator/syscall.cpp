@@ -1428,7 +1428,7 @@ bool arm_syscall_madvise(armulator *emu) { RETURN(-EINVAL); return false; }
 bool arm_syscall_getdents64(armulator *emu) { RETURN(-EINVAL); return false; }
 bool arm_syscall_fcntl64(armulator *emu) { RETURN(-EINVAL); return false; }
 
-static char *arm_get_syscall_name(int num)
+static const char *arm_get_syscall_name(int num)
 {
 	switch(num)
 	{

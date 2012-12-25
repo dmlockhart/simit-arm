@@ -24,7 +24,7 @@ extern "C" {
 int yylex();
 }
 
-void yyerror(char *);
+void yyerror(const char *);
 extern void push_entry(char *, char *, char *, double);
 
 extern int mylineno;
@@ -60,7 +60,7 @@ stmt:	IDEF LBRAC IDENT COMMA HCONST COMMA HCONST COMMA FCONST RBRAC {
 
 %%
 
-void yyerror (char *s)
+void yyerror (const char *s)
 {
 	std::cerr << s << " near line " << mylineno+1 << std::endl;
 }

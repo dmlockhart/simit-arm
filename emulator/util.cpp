@@ -53,7 +53,7 @@ void dump_int64(uint64_t value, FILE *stream)
 void dump_int64_smart(uint64_t value, FILE *stream)
 {
 	uint64_t val = value;
-	char *c = "";
+	const char *c = "";
 
 	if(value > 1000000000)
 	{

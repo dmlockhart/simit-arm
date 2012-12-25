@@ -489,7 +489,7 @@ static memory_fault_t remap_read(memory_ext_interface *intf,
 
 #define REMAP_READ_INSTANTIATE(retyp) \
 template <> \
-static memory_fault_t remap_read<retyp ## _t>(memory_ext_interface *intf, \
+memory_fault_t remap_read<retyp ## _t>(memory_ext_interface *intf, \
 	target_addr_t addr, retyp ## _t *pval) \
 {\
 	return intf->read_ ## retyp (addr, pval); \
@@ -510,7 +510,7 @@ static memory_fault_t remap_write(memory_ext_interface *intf,
 
 #define REMAP_WRITE_INSTANTIATE(retyp) \
 template <> \
-static memory_fault_t remap_write<retyp ## _t>(memory_ext_interface *intf, \
+memory_fault_t remap_write<retyp ## _t>(memory_ext_interface *intf, \
 	target_addr_t addr, retyp ## _t val) \
 { \
 	return intf->write_ ## retyp (addr, val); \

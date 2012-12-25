@@ -38,6 +38,7 @@
 #include <cstring>
 #include <iostream>
 #include <csignal>
+#include <cstdlib>
 
 /*Macro defines for MMU state*/
 #define MMU_CTL       (control)

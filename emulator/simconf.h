@@ -18,6 +18,8 @@
 
 /* header file for system configuration information */
 
+#include <cstdio>
+#include <cstdlib>
 #include <vector>
 
 namespace simit 

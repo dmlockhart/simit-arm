@@ -119,7 +119,7 @@ IDENT   [a-zA-Z_][a-zA-Z_0-9]*
 
 %%
 
-void isa_error (char *s)
+void isa_error (const char *s)
 {
 	fprintf(stderr, "%s near line %d\n", s, isa_lexer->lineno());
 	exit(1);

@@ -207,7 +207,7 @@ class arm_emulator
 
 	word_t read_cpsr() const
 	{
-		return my_regs.cpsr&0xfffffff | (my_regs.cc&0xf)<<28;
+		return (my_regs.cpsr&0xfffffff) | (my_regs.cc&0xf)<<28;
 	}
 
 

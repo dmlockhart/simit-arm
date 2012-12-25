@@ -33,6 +33,7 @@ namespace Sgi = std;
 #endif
 
 #include <string>
+#include <cstring>
 #include <iostream>
 #include <vector>
 

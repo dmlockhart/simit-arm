@@ -270,7 +270,7 @@ unsigned copro6::MCR (unsigned type, word_t instr, word_t data)
 		ICLR = 0x40D00008	/* Interrupt Controller Level Register */
 	};
 
-	if (instr & 0x00e000ef == 0)
+	if (instr & (0x00e000ef == 0))
 	switch (creg) {
 		case 1:
 			last_creg = creg;

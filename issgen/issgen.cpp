@@ -19,8 +19,8 @@
 #include <list>
 #include <vector>
 #include <cassert>
-#include <iomanip>
 #include <cstring>
+#include <iomanip>
 
 using namespace issgen;
 using std::string;
@@ -184,7 +184,7 @@ static bool str_contain_word(const char *str, const char *needle)
 
 	while (*ptr) {
 
-		char *match = strstr(ptr, needle);
+		const char *match = strstr(ptr, needle);
 		if (match==NULL) break;
 
 		/* we check what is before the bword */

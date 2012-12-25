@@ -13,6 +13,7 @@
     GNU General Public License for more details.
 *************************************************************************/
 
+#include <cstdlib>
 #include <functional>
 #include "huffman.h"
 

@@ -13,6 +13,7 @@
     GNU General Public License for more details.
 *************************************************************************/
 
+#include <cstring>
 #include "symbol.hpp"
 
 using std::vector;

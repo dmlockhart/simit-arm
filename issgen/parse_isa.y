@@ -16,7 +16,8 @@
 
 #include <vector>
 #include <string>
-#include "cstdlib"
+#include <cstdio>
+#include <cstdlib>
 #include "issgen.hpp"
 #include <FlexLexer.h>
 
@@ -29,9 +30,9 @@ using std::string;
 
 /* globals shared across parsers */
 extern int isa_lex();
-extern void isa_error(char *);
+extern void isa_error(const char *);
 
-static void warn(char *, Symbol);
+static void warn(const char *, Symbol);
 
 /* some globals for parsing isa program */
 extern isa_prog *isa_parser_result;
@@ -52,9 +53,9 @@ extern isa_prog *isa_parser_result;
 	OP_CON_ENV *op_con_env_t;
 
 	class oper_base *oper_t;
-	vector<class oper_base *> *oper_list_t;
+	std::vector<class oper_base *> *oper_list_t;
 
-	vector<bin_code *> *code_list_t;
+	std::vector<bin_code *> *code_list_t;
 }
 
 %token TK_OP		"op"
@@ -193,6 +194,6 @@ opfld:		TK_IDENT '=' TK_STR {
 			;
 %%
 
-static void warn(char *msg, Symbol ident) {
+static void warn(const char *msg, Symbol ident) {
 	fprintf(stderr, "%s %s\n", msg, symbol_get_string(ident).c_str());
 }

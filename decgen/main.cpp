@@ -14,9 +14,10 @@
 *************************************************************************/
 
 
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
-#include <stdio.h>
 
 #include "decode.h"
 #include "huffman.h"
