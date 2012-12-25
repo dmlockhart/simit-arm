@@ -1,0 +1,93 @@
+
+armsim-0.1 07-02-2002, initial release.
+
+armsim-0.2 07-15-2002, improved release, 50% faster than 0.1.
+Major changes:
+1. Bug fixed on swap,swapbyte (when src and dst reg be the same)
+2. Exploit instruction memory accessing locality to save pc page table lookups.
+3. Exploit data access locality (pc based, stack pointer based) to save page table lookup.
+4. Use table lookup to replace switch/case in predicate testing.
+5. Specializes some memory access operation implementations to save execution time.
+6. Bug fixed on carry bit updating of adc, sbc and rsc.
+
+SimIt-ARM-1.0b 10-6-2002, a major release including a cycle-accurate simulator.
+1. Enhanced portability. Installation tested on x86-linux, sun-solaris, alpha and Cygwin.
+2. Added mmap system call interpretation, shortens program execution trace.
+
+SimIt-ARM-1.0 4-6-2003, minor chages from 1.0b.
+1. Used automatic synthesized decoder, correctness now ensured.
+2. Added argument "-m" so that user can control the length of simulation.
+3. Small fix on fstat64 system call interpretation for Linux compatibility.
+4. Small fix on cache.h to suppress g++3.2 complaints.
+
+SimIt-ARM-1.1a 4-29-2003, alpha release of modularized emulator and simulator.
+1. Bug fixes on shifter operand of dpi operations.
+2. Emulator source code becomes CPP code, 5-10% slow down for emulator.
+3. The emulator and simulator are modularized, i.e. multiple instances
+   can be created without interfering each other. Very useful for
+   multi-processor platform simulation.
+4. Emulator and simulator now can be reused, i.e. they can load a program
+   and run, then dump the program and reload another to run.
+
+SimIt-ARM-1.1b 7-10-2003, bug fix release
+1. Bug fixes on half-word/signed byte load/store.
+2. Bug fix on mla_s's erroneous zero flag setting.
+3. Bug fixes in ema_count:  forgot to count fpe and syscall.
+4. Buf fixes in syscall.cpp:read/write, size_t --> ssize_t.
+5. Bug fixes in emumem.cpp:get_page, C++ array constructor does not do
+   initialization, nor type checking on initializer.
+6. Inlined some memory functions to boost ISS speed by about 10%.
+
+SimIt-ARM-1.1 9-1-2003, release
+1. Various small bug fixes with the help of Valgrind.
+
+SimIt-ARM-2.0 1-8-2004, release
+1. The cycle accurate simulator is mostly synthesized from MADL.
+2. Cycle accurate simulator is 2x faster than the one in 1.x release.
+3. Many bugs in release 1.x fixed, improved timing accuracy.
+4. Flexible stub provided for external device models.
+   To learn how to use the stubs, see file dev_test.hpp.
+5. Simplified configuration.
+
+SimIt-ARM-2.0.1 2-10-2004, bug fix release
+1. Store_ext_reg instruction's address computation is fixed.
+2. Load_ext_imm instruction's sign extension is fixed.
+3. One less cycle for coprocessor instruction execution.
+
+SimIt-ARM-2.0.2 5-17-2004, bug fix release with improvements
+1. Smull and umull encoding fixed.
+2. Fix building out-of-source problem. (Thanks to Artur Klauser)
+3. Speed up of emulator by hacking PC and CPSR. (Thanks to Artur Klauser)
+4. Included decgen for user to add new instructions.
+5. MMAP based speedup. (Thanks to Artur Klauser)
+
+SimIt-ARM-2.0.3 9-15-2004, cache model fix
+1. Fixed some problems in data cache, adjusted cache parameters, improves
+   accuracy.
+
+SimIt-ARM-2.0.4 12-9-2004, C++ syntax fix
+1. Fixed some problems exposed by gcc3.4.
+2. Chris Han contributed to implement some system call routines.
+
+SimIt-ARM-2.1 2-2-2005, Bug fix, portability fix, added singleton
+1. Fixed sima's bug in sign-extending for some load instructions.
+2. Added emu_single directory, generates an non-modularized emulator,
+   about 5-6% faster than emu.
+3. Fixed one portability problem in libosm, _S and _L are used as macros
+   in c library. Never use these names
+4. Fixed one portability problem in decgen/decode.h. label_t is used
+   somewhere in the library. Change that to dg_label_t.
+
+SimIt-ARM-2.1.1,5-21-2005, cleanup not really to be released
+1. Removed emu_single, reverted related changes in version 2.1.
+   Too complicated and not worthwhile the slight performance gain.
+2. Improved memory emulator, added access permission control.
+4. Remved the original external memory interface since the new memory
+   emulator has integrated similar function in a better way.
+3. Fixed some bugs in libosm/mpz_base.?pp. The bugs were irrelevant
+   to SimIt-ARM since this part of the library was not used in SimIt.
+
+SimIt-ARM-3.0 6-25-2007, supports system-level simulation
+1. Supports system level simulation.
+2. Supports compiled simulation (ema_jit).
+3. Improved the interface of the builtin debugger.

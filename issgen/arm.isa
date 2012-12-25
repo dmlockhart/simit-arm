@@ -1,0 +1,3013 @@
+/*************************************************************************
+    Copyright (C) 2002 - 2007 Wei Qin
+    See file COPYING for more information.
+
+    This program is free software; you can redistribute it and/or modify    
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+*************************************************************************/
+
+/**************************************************************************
+ Note: when specifying an instruction, the statement that may modify the
+ program counter must be at the end. Failing to follow the rule causes
+ unpredictable outcome for compiled simulation. ARM Reference Manual
+ states that the base register Rn of memory instructions should not be R15.
+ Otherwise the result is unpredictable. Therefore an update to the base
+ register can be an exception to the rule. Check page A2-17 for details.
+
+ A second issue related to compiled simulation is the handling of
+ self-modifying code (SMC). If a memory write by a compiled instruction
+ modifies a compiled address, it should abort immediately (before
+ modifying memory) to the main loop, which will then unload the DLL
+ containing the modified address. The instruction will then restart.
+ Aborting immediately is necessary since the modified address may be
+ in the same DLL as the instruction, or may even be the instruction itself.
+ However, aborting immediately is not easy. Some instructions have
+ side-effects that need to roll back before they can abort, such as
+ ldt, sdt, ldm2, etc. To solve the problem, the interpretation code
+ should defer the SMC abort to the same point where regular data
+ abort is handled. A convenient way is to generate a special artificial
+ SMC fault in MMU_WRITE_* macros. The fault will be caught by ABORT
+ and will not cause raise_exception(v) to be called.
+
+**************************************************************************/
+
+field {
+
+	cond:4;
+	rn:4;
+	rd:4;
+	rs:4;
+	rm:4;
+	rotate:4;
+	shift_imm:5;
+	field_mask:4;
+	
+	imm4_1:4;
+	imm4_2:4;
+	imm8:8;
+	imm12:12;
+	imm24:24;
+
+	ufld:1;
+	wfld:1;
+	abit:1;
+	reg_mask:16;
+	reg_mask2:15;
+
+	cp_num:4;
+
+	x_bit:1;
+	y_bit:1;
+
+}
+
+var {
+
+	op1:uint32_t;
+	op2:uint32_t;
+
+	val32:uint32_t;
+	tmp32:uint32_t;
+
+	rslt8:uint8_t;
+	rslt16:uint16_t;
+	rslt32:uint32_t;
+	rslt64:uint64_t;
+
+	address:uint32_t;
+	offset:uint32_t;
+	start_addr:uint32_t;
+	base_addr:uint32_t;
+	pcount:uint32_t;
+	iterator:uint32_t;
+	carry:uint32_t;
+	overflow:uint32_t;
+
+	current_mode:cpu_mode_t;
+	fault:mmu_fault_t;
+
+	cpab:uint32_t;
+
+}
+
+
+
+group rotate_imm32
+{
+
+op imm_mode1(0000:imm8) {
+execute="$imm8$"
+}
+
+op rot_mode1(rotate:imm8) {
+execute="(($imm8$>>($rotate$<<1))|($imm8$<<(32-($rotate$<<1))))"
+}
+}
+
+
+
+
+group rotate_imm32_s
+{
+
+op imm_mode1_s(0000:imm8) {
+	execute="(carry=C_FLAG,$imm8$)"
+}
+op rot_mode1_s(rotate:imm8) {
+	execute="(rslt32=($imm8$>>($rotate$<<1))|($imm8$<<(32-($rotate$<<1))), carry=BIT31(rslt32), rslt32)"
+}
+
+}
+
+
+group shifts {
+
+group imm_shifts
+{
+
+op lsl_mode2(shift_imm:00:0:rm) {
+	execute="(READ_REG($rm$)<<$shift_imm$)"
+}
+
+op zero_mode2(00000:01:0:----) {
+	execute="0"
+}
+
+op lsr_mode2(shift_imm:01:0:rm) {
+	execute="(READ_REG($rm$)>>$shift_imm$)"
+}
+
+op sign_mode2(00000:10:0:rm) {
+	execute="(BIT31(READ_REG($rm$))?~0:0)"
+}
+
+op asr_mode2(shift_imm:10:0:rm) {
+	execute="((int32_t)(READ_REG($rm$))>>$shift_imm$)"
+}
+
+op rrx_mode2(00000:11:0:rm) {
+	execute="((READ_REG($rm$)>>1)|(C_FLAG<<31))"
+}
+
+op ror_mode2(shift_imm:11:0:rm) {
+	execute="(val32=READ_REG($rm$), (val32>>$shift_imm$)|(val32<<(32-$shift_imm$)))"
+}
+
+}
+
+
+group reg_shifts
+{
+
+op lsl_mode3(rs:0:00:1:rm) {
+	execute="(tmp32=READ_REG($rs$)&0xFF, val32=READ_REG($rm$), (tmp32<32)?(val32<<tmp32):0)"
+}
+
+op lsr_mode3(rs:0:01:1:rm) {
+	execute="(tmp32=READ_REG($rs$)&0xFF, val32=READ_REG($rm$), (tmp32<32)?(val32>>tmp32):0)"
+}
+
+op asr_mode3(rs:0:10:1:rm) {
+	execute="(tmp32=READ_REG($rs$)&0xFF, val32=READ_REG($rm$), (int32_t)val32>>(tmp32<32?tmp32:31))"
+}
+
+op ror_mode3(rs:0:11:1:rm) {
+	execute="(tmp32=READ_REG($rs$)&0xFF, val32=READ_REG($rm$), (val32>>(tmp32&0x1f))|(val32<<(32-(tmp32&0x1f))))"
+}
+
+} /* reg_shifts */
+
+} /* shifts */
+
+
+
+group shifts_s
+{
+
+
+group imm_shifts_s
+{
+
+op lsz_mode2_s(00000:00:0:rm) {
+	execute="(carry=C_FLAG, READ_REG($rm$))"
+}
+
+op lsl_mode2_s(shift_imm:00:0:rm) {
+	execute="(val32=READ_REG($rm$), carry=BITn(val32, 32-$shift_imm$), val32<<$shift_imm$)"
+}
+
+op zero_mode2_s(00000:01:0:rm) {
+	execute="(carry=BIT31(READ_REG($rm$)), 0)"
+}
+
+op lsr_mode2_s(shift_imm:01:0:rm) {
+	execute="(val32=READ_REG($rm$), carry=BITn(val32, $shift_imm$-1), val32>>$shift_imm$)"
+}
+
+op sign_mode2_s(00000:10:0:rm) {
+	execute="(val32=READ_REG($rm$), carry=BIT31(val32), BIT31(val32)?~0:0)"
+}
+
+op asr_mode2_s(shift_imm:10:0:rm) {
+	execute="(val32=READ_REG($rm$), carry=BITn(val32, $shift_imm$-1), (int32_t)val32>>$shift_imm$)"
+}
+
+op rrx_mode2_s(00000:11:0:rm) {
+	execute="(val32=READ_REG($rm$), carry=BIT0(val32), (val32>>1)|(C_FLAG<<31))"
+}
+
+op ror_mode2_s(shift_imm:11:0:rm) {
+	execute="(val32=READ_REG($rm$), carry=BITn(val32, $shift_imm$-1), (val32>>$shift_imm$)|(val32<<(32-$shift_imm$)))"
+}
+
+}
+
+
+
+group reg_shifts_s
+{
+
+op lsl_mode3_s(rs:0:00:1:rm) {
+	execute="(tmp32=READ_REG($rs$)&0xFF, val32=READ_REG($rm$), carry=(tmp32==0)?C_FLAG:((tmp32>32)?0:BITn(val32,32-val32)), (tmp32<32)?(val32<<tmp32):0)"
+}
+
+op lsr_mode3_s(rs:0:01:1:rm) {
+	execute="(tmp32=READ_REG($rs$)&0xFF, val32=READ_REG($rm$), carry=(tmp32==0)?C_FLAG:((tmp32>32)?0:BITn(val32,tmp32-1)), (tmp32<32)?(val32>>tmp32):0)"
+}
+
+op asr_mode3_s(rs:0:10:1:rm) {
+	execute="(tmp32=READ_REG($rs$)&0xFF, val32=READ_REG($rm$), carry=(tmp32==0)?C_FLAG:((tmp32>31)?BIT31(val32):BITn(val32,tmp32-1)), (int32_t)val32>>(tmp32<32?tmp32:31))"
+}
+
+op ror_mode3_s(rs:0:11:1:rm) {
+	execute="(tmp32=READ_REG($rs$)&0xFF, val32=READ_REG($rm$), carry=(tmp32==0)?C_FLAG:((tmp32&0x1f==0)?BIT31(val32):BITn(val32,(tmp32&0x1f)-1)), (val32>>(tmp32&0x1f))|(val32<<(32-(tmp32&0x1f))))"
+}
+
+}
+
+} /*shifts_s */
+
+
+group ldm_mode1 {
+
+op ldm1_000(000:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount + 4;
+"
+}
+
+op ldm1_001(000:11:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount + 4;
+	WRITE_REG($rn$, base_addr - pcount);
+"
+}
+
+op ldm1_010(010:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr;
+"
+}
+
+op ldm1_011(010:11:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr;
+	WRITE_REG($rn$, base_addr + pcount);
+"
+}
+
+op ldm1_100(100:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount;
+"
+}
+
+op ldm1_101(100:11:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount;
+	WRITE_REG($rn$, base_addr - pcount);
+"
+}
+
+op ldm1_110(110:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr + 4;
+"
+}
+
+op ldm1_111(110:11:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr + 4;
+	WRITE_REG($rn$, base_addr + pcount);
+"
+}
+
+} /* ldm_mode1 */
+
+group ldm_mode2 {
+
+op ldm2_000(001:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr - pcount + 4;
+"
+}
+
+op ldm2_010(011:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr;
+"
+}
+
+op ldm2_100(101:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr - pcount;
+"
+}
+
+op ldm2_110(111:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr + 4;
+"
+}
+
+} /* ldm_mode2 */
+
+group ldm_mode3 {
+
+op ldm3_000(001:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr - pcount + 4;
+"
+}
+
+op ldm3_001(001:11:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr - pcount + 4;
+	WRITE_REG($rn$, base_addr - pcount);
+"
+}
+
+op ldm3_010(011:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr;
+"
+}
+
+op ldm3_011(011:11:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr;
+	WRITE_REG($rn$, base_addr + pcount);
+"
+}
+
+op ldm3_100(101:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr - pcount;
+"
+}
+
+op ldm3_101(101:11:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr - pcount;
+	WRITE_REG($rn$, base_addr - pcount);
+"
+}
+
+op ldm3_110(111:01:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr + 4;
+"
+}
+
+op ldm3_111(111:11:rn) {
+execute = "
+	base_addr = READ_REG($rn$);	
+	start_addr = base_addr + 4;
+	WRITE_REG($rn$, base_addr + pcount);
+"
+}
+
+} /* ldm_mode3 */
+
+group stm_mode1 {
+
+op stm1_000(000:00:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount + 4;
+"
+}
+
+op stm1_001(000:10:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount + 4;
+	WRITE_REG($rn$, base_addr - pcount);
+"
+}
+
+op stm1_010(010:00:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr;
+"
+}
+
+op stm1_011(010:10:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr;
+	WRITE_REG($rn$, base_addr + pcount);
+"
+}
+
+op stm1_100(100:00:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount;
+"
+}
+
+op stm1_101(100:10:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount;
+	WRITE_REG($rn$, base_addr - pcount);
+"
+}
+
+op stm1_110(110:00:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr + 4;
+"
+}
+
+op stm1_111(110:10:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr + 4;
+	WRITE_REG($rn$, base_addr + pcount);
+"
+}
+
+} /* stm_mode1 */
+
+group stm_mode2 {
+
+op stm2_000(001:00:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount + 4;
+"
+}
+
+op stm2_010(011:00:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr;
+"
+}
+
+op stm2_100(101:00:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr - pcount;
+"
+}
+
+op stm2_110(111:00:rn) {
+execute = "
+	base_addr = READ_REG($rn$);
+	start_addr = base_addr + 4;
+"
+}
+
+} /* stm_mode2 */
+
+group ldc_mode1 {
+
+op ldc1_01(01-01:rn){
+execute = "
+	address = READ_REG($rn$);
+"
+}
+
+op ldc1_10(10-01:rn){
+execute = "
+	address = READ_REG($rn$) - (offset << 2);
+"
+}
+
+op ldc1_11(11-01:rn){
+execute = "
+	address = READ_REG($rn$) + (offset << 2);
+"
+}
+
+} /* ldc_mode1 */
+
+group ldc_mode2 {
+
+op ldc2_00(00-11){
+execute = "
+	start_addr = base_addr;
+	address = base_addr - (offset << 2);
+"
+}
+
+op ldc2_01(01-11){
+execute = "
+	start_addr = base_addr;
+	address = base_addr + (offset << 2);
+"
+}
+
+op ldc2_10(10-11){
+execute = "
+	start_addr = address = base_addr - (offset << 2);
+"
+}
+
+op ldc2_11(11-11){
+execute = "
+	start_addr = address = base_addr + (offset << 2);
+"
+}
+
+} /* ldc_mode2 */
+
+group stc_mode1 {
+
+op stc1_01(01-00:rn){
+execute = "
+	address = READ_REG($rn$);
+"
+}
+
+op stc1_10(10-00:rn){
+execute = "
+	address = READ_REG($rn$) - (offset << 2);
+"
+}
+
+op stc1_11(11-00:rn){
+execute = "
+	address = READ_REG($rn$) + (offset << 2);
+"
+}
+
+} /* stc_mode1 */
+
+group stc_mode2 {
+
+op stc2_00(00-10){
+execute = "
+	start_addr = base_addr;
+	address = base_addr - (offset << 2);
+"
+}
+
+op stc2_01(01-10){
+execute = "
+	start_addr = base_addr;
+	address = base_addr + (offset << 2);
+"
+}
+
+op stc2_10(10-10){
+execute = "
+	start_addr = address = base_addr - (offset << 2);
+"
+}
+
+op stc2_11(11-10){
+execute = "
+	start_addr = address = base_addr + (offset << 2);
+"
+}
+
+} /* stc_mode2 */
+
+group root
+{
+
+op movi(----00111010----:rd:rotate_imm32)
+{
+execute="
+	WRITE_REG($rd$, $rotate_imm32$);
+"
+}
+
+
+op movis(----00111011----:rd:rotate_imm32_s)
+{
+execute="
+	rslt32 = $rotate_imm32_s$;
+	if ($rd$==15)
+		WRITE_CPSR(SPSR);
+	else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op mov(----00011010----:rd:shifts)
+{
+execute="
+	WRITE_REG($rd$, $shifts$);
+"
+}
+
+op movs(----00011011----:rd:shifts_s)
+{
+execute="
+	rslt32 = $shifts_s$;
+	if ($rd$==15)
+    	WRITE_CPSR(SPSR);
+	else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+
+op mvni(----00111110----:rd:rotate_imm32)
+{
+execute="
+	WRITE_REG($rd$, ~$rotate_imm32$);
+"
+}
+
+op mvnis(----00111111----:rd:rotate_imm32_s)
+{
+execute="
+	rslt32 = ~$rotate_imm32_s$;
+	if ($rd$==15)
+		WRITE_CPSR(SPSR);
+	else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op mvn(----00011110----:rd:shifts)
+{
+execute="
+	WRITE_REG($rd$, ~$shifts$);
+"
+}
+
+op mvns(----00011111----:rd:shifts_s)
+{
+execute="
+	rslt32 = ~$shifts_s$;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op addi(----00101000:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) + $rotate_imm32$);
+"
+}
+
+op addis(----00101001:rn:rd:rotate_imm32) {
+execute="
+	tmp32 = $rotate_imm32$;
+	val32  = READ_REG($rn$);
+	rslt32 = val32 + tmp32;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, rslt32<val32, (val32^tmp32^-1) & (val32^rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op add(----00001000:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) + $shifts$);
+"
+}
+
+op adds(----00001001:rn:rd:shifts) {
+execute="
+	tmp32 = $shifts$;
+	val32  = READ_REG($rn$);
+	rslt32 = val32 + tmp32;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, rslt32<val32, (val32^tmp32^-1) & (val32^rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op adci(----00101010:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) + $rotate_imm32$ + C_FLAG);
+"
+}
+
+op adcis(----00101011:rn:rd:rotate_imm32) {
+execute="
+	tmp32  = $rotate_imm32$;
+	val32  = READ_REG($rn$);
+	if (C_FLAG) {
+		rslt32 = tmp32+val32+1;
+		carry = rslt32 <= val32;
+	}
+	else {
+		rslt32 = tmp32+val32;
+		carry = rslt32 < val32;
+	}
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, carry, (val32 ^ tmp32 ^ -1) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op adc(----00001010:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) + $shifts$ + C_FLAG);
+"
+}
+
+op adcs(----00001011:rn:rd:shifts) {
+execute="
+	tmp32  = $shifts$;
+	val32  = READ_REG($rn$);
+	if (C_FLAG) {
+		rslt32 = tmp32+val32+1;
+		carry = rslt32 <= val32;
+	}
+	else {
+		rslt32 = tmp32+val32;
+		carry = rslt32 < val32;
+	}
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, carry, (val32 ^ tmp32 ^ -1) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op subi(----00100100:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) - $rotate_imm32$);
+"
+}
+
+op subis(----00100101:rn:rd:rotate_imm32) {
+execute="
+	tmp32  = $rotate_imm32$;
+	val32  = READ_REG($rn$);
+	rslt32 = val32 - tmp32;
+
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, val32>=tmp32, (val32 ^ tmp32) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op sub(----00000100:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) - $shifts$);
+"
+}
+
+op subs(----00000101:rn:rd:shifts) {
+execute="
+	tmp32 = $shifts$;
+	val32  = READ_REG($rn$);
+	rslt32 = val32 - tmp32;
+
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, val32>=tmp32, (val32 ^ tmp32) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op sbci(----00101100:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) - $rotate_imm32$ - (1-C_FLAG));
+"
+}
+
+op sbcis(----00101101:rn:rd:rotate_imm32) {
+execute="
+	tmp32 = $rotate_imm32$;
+	val32 = READ_REG($rn$);
+	if (C_FLAG) {
+		rslt32 = val32 - tmp32;
+		carry = val32 >= tmp32;
+	}
+	else {
+		rslt32 = val32 - tmp32 - 1;
+		carry = val32 > tmp32;
+	}
+
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, carry, (val32 ^ tmp32) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op sbc(----00001100:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) - $shifts$ - (1-C_FLAG));
+"
+}
+
+op sbcs(----00001101:rn:rd:shifts) {
+execute="
+	tmp32 = $shifts$;
+	val32 = READ_REG($rn$);
+	if (C_FLAG) {
+		rslt32 = val32 - tmp32;
+		carry = val32 >= tmp32;
+	}
+	else {
+		rslt32 = val32 - tmp32 - 1;
+		carry = val32 > tmp32;
+	}
+
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, carry, (val32 ^ tmp32) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op rsbi(----00100110:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, $rotate_imm32$ - READ_REG($rn$));
+"
+}
+
+op rsbis(----00100111:rn:rd:rotate_imm32) {
+execute="
+	val32 = $rotate_imm32$;
+	tmp32 = READ_REG($rn$);
+	rslt32 = val32 - tmp32;
+
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, val32>=tmp32, (val32 ^ tmp32) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op rsb(----00000110:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, $shifts$ - READ_REG($rn$));
+"
+}
+
+op rsbs(----00000111:rn:rd:shifts) {
+execute="
+	val32 = $shifts$;
+	tmp32 = READ_REG($rn$);
+	rslt32 = val32 - tmp32;
+
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, val32>=tmp32, (val32 ^ tmp32) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op rsci(----00101110:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, $rotate_imm32$ - READ_REG($rn$) - (1-C_FLAG));
+"
+}
+
+op rscis(----00101111:rn:rd:rotate_imm32) {
+execute="
+	val32 = $rotate_imm32$;
+	tmp32 = READ_REG($rn$);
+	if (C_FLAG) {
+		rslt32 = val32 - tmp32;
+		carry = val32 >= tmp32;
+	}
+	else {
+		rslt32 = val32 - tmp32 - 1;
+		carry = val32 > tmp32;
+	}
+
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, carry, (val32 ^ tmp32) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op rsc(----00001110:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, $shifts$ - READ_REG($rn$) - (1-C_FLAG));
+"
+}
+
+op rscs(----00001111:rn:rd:shifts) {
+execute="
+	val32 = $shifts$;
+	tmp32 = READ_REG($rn$);
+	if (C_FLAG) {
+		rslt32 = val32 - tmp32;
+		carry = val32 >= tmp32;
+	}
+	else {
+		rslt32 = val32 - tmp32 - 1;
+		carry = val32 > tmp32;
+	}
+
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZCV(rslt32, carry, (val32 ^ tmp32) & (val32 ^ rslt32));
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op andi(----00100000:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) & $rotate_imm32$);
+"
+}
+
+op andis(----00100001:rn:rd:rotate_imm32_s) {
+execute="
+	rslt32 = READ_REG($rn$) & $rotate_imm32_s$;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op and(----00000000:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) & $shifts$);
+"
+}
+
+op ands(----00000001:rn:rd:shifts_s) {
+execute="
+	rslt32 = READ_REG($rn$) & $shifts_s$;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op eori(----00100010:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) ^ $rotate_imm32$);
+"
+}
+
+op eoris(----00100011:rn:rd:rotate_imm32_s) {
+execute="
+	rslt32 = READ_REG($rn$) ^ $rotate_imm32_s$;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op eor(----00000010:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) ^ $shifts$);
+"
+}
+
+op eors(----00000011:rn:rd:shifts_s) {
+execute="
+	rslt32 = READ_REG($rn$) ^ $shifts_s$;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op orri(----00111000:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) | $rotate_imm32$);
+"
+}
+
+op orris(----00111001:rn:rd:rotate_imm32_s) {
+execute="
+	rslt32 = READ_REG($rn$) | $rotate_imm32_s$;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op orr(----00011000:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) | $shifts$);
+"
+}
+
+op orrs(----00011001:rn:rd:shifts_s) {
+execute="
+	rslt32 = READ_REG($rn$) | $shifts_s$;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op bici(----00111100:rn:rd:rotate_imm32) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) & ~$rotate_imm32$);
+"
+}
+
+op bicis(----00111101:rn:rd:rotate_imm32_s) {
+execute="
+	rslt32 = READ_REG($rn$) & ~$rotate_imm32_s$;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op bic(----00011100:rn:rd:shifts) {
+execute="
+	WRITE_REG($rd$, READ_REG($rn$) & ~$shifts$);
+"
+}
+
+op bics(----00011101:rn:rd:shifts_s) {
+execute="
+	rslt32 = READ_REG($rn$) & ~$shifts_s$;
+    if ($rd$==15)
+        WRITE_CPSR(SPSR);
+    else
+		ASGN_NZC(rslt32, carry);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op cmpi(----00110101:rn:----:rotate_imm32) {
+execute="
+	tmp32  = $rotate_imm32$;
+	val32  = READ_REG($rn$);
+	rslt32 = val32 - tmp32;
+
+	ASGN_NZCV(rslt32, val32 >= tmp32, (val32 ^ tmp32) & (val32 ^ rslt32));
+"
+}
+
+op cmp(----00010101:rn:----:shifts) {
+execute="
+	tmp32 = $shifts$;
+	val32  = READ_REG($rn$);
+	rslt32 = val32 - tmp32;
+
+	ASGN_NZCV(rslt32, val32 >= tmp32, (val32 ^ tmp32) & (val32 ^ rslt32));
+"
+}
+
+op cmni(----00110111:rn:----:rotate_imm32) {
+execute="
+	tmp32 = $rotate_imm32$;
+	val32  = READ_REG($rn$);
+	rslt32 = val32 + tmp32;
+	ASGN_NZCV(rslt32, rslt32<val32, (val32 ^ tmp32 ^ -1) & (val32 ^ rslt32));
+"
+}
+
+op cmn(----00010111:rn:----:shifts) {
+execute="
+	tmp32 = $shifts$;
+	val32  = READ_REG($rn$);
+	rslt32 = val32 + tmp32;
+	ASGN_NZCV(rslt32, rslt32<val32, (val32 ^ tmp32 ^ -1) & (val32 ^ rslt32));
+"
+}
+
+op tsti(----00110001:rn:----:rotate_imm32_s) {
+execute="
+	rslt32 = READ_REG($rn$) & $rotate_imm32_s$;
+	ASGN_NZC(rslt32, carry);
+"
+}
+
+op tst(----00010001:rn:----:shifts_s) {
+execute="
+	rslt32 = READ_REG($rn$) & $shifts_s$;
+	ASGN_NZC(rslt32, carry);
+"
+}
+
+op teqi(----00110011:rn:----:rotate_imm32_s) {
+execute="
+	rslt32 = READ_REG($rn$) ^ $rotate_imm32_s$;
+	ASGN_NZC(rslt32, carry);
+"
+}
+
+op teq(----00010011:rn:----:shifts_s) {
+execute="
+	rslt32 = READ_REG($rn$) ^ $shifts_s$;
+	ASGN_NZC(rslt32, carry);
+"
+}
+
+
+op mla(----00000010:rd:rn:rs:1001:rm) {
+execute="
+	WRITE_REG($rd$, (uint32_t)((uint64_t)READ_REG($rm$) * (uint64_t)READ_REG($rs$) + READ_REG($rn$)));
+"
+}
+
+op mla_s(----00000011:rd:rn:rs:1001:rm) {
+execute="
+	rslt32 = (uint32_t)((uint64_t)READ_REG($rm$) * (uint64_t)READ_REG($rs$) + READ_REG($rn$));
+	ASGN_NZ(rslt32);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op mul(----00000000:rd:----:rs:1001:rm) {
+execute="
+	WRITE_REG($rd$, (uint32_t)((uint64_t)READ_REG($rm$) * (uint64_t)READ_REG($rs$)));
+"
+}
+
+op mul_s(----00000001:rd:----:rs:1001:rm) {
+execute="
+	rslt32 = (uint32_t)((uint64_t)READ_REG($rm$) * (uint64_t)READ_REG($rs$));
+	ASGN_NZ(rslt32);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op smull(----00001100:rn:rd:rs:1001:rm) {
+execute="
+    rslt64 = (int64_t)READ_REG($rm$) * (int64_t)READ_REG($rs$);
+    WRITE_REG($rn$, (uint32_t)(rslt64>>32));
+    WRITE_REG($rd$, (uint32_t)rslt64);
+"
+}
+
+op smull_s(----00001101:rn:rd:rs:1001:rm) {
+execute="
+    rslt64 = (int64_t)READ_REG($rm$) * (int64_t)READ_REG($rs$);
+	ASGN_NZ((uint32_t)rslt64);
+    WRITE_REG($rn$, (uint32_t)(rslt64>>32));
+    WRITE_REG($rd$, (uint32_t)rslt64);
+"
+}
+
+op smlal(----00001110:rn:rd:rs:1001:rm) {
+execute="
+	rslt64 = ((uint64_t)READ_REG($rn$)<<32) + (uint64_t)READ_REG($rd$);
+    rslt64 = (int64_t)READ_REG($rm$) * (int64_t)READ_REG($rs$)+rslt64;
+    WRITE_REG($rn$, (uint32_t)(rslt64>>32));
+    WRITE_REG($rd$, (uint32_t)rslt64);
+"
+}
+
+op smlal_s(----00001111:rn:rd:rs:1001:rm) {
+execute="
+	rslt64 = ((uint64_t)READ_REG($rn$)<<32) + (uint64_t)READ_REG($rd$);
+    rslt64 = (int64_t)READ_REG($rm$) * (int64_t)READ_REG($rs$)+rslt64;
+    WRITE_REG($rn$, (uint32_t)(rslt64>>32));
+    WRITE_REG($rd$, (uint32_t)rslt64);
+	ASGN_NZ((uint32_t)rslt64);
+"
+}
+
+op umull(----00001000:rn:rd:rs:1001:rm) {
+execute="
+    rslt64 = (uint64_t)READ_REG($rm$) * (uint64_t)READ_REG($rs$);
+    WRITE_REG($rn$, (uint32_t)(rslt64>>32));
+    WRITE_REG($rd$, (uint32_t)rslt64);
+"
+}
+
+op umull_s(----00001001:rn:rd:rs:1001:rm) {
+execute="
+    rslt64 = (uint64_t)READ_REG($rm$) * (uint64_t)READ_REG($rs$);
+    WRITE_REG($rn$, (uint32_t)(rslt64>>32));
+    WRITE_REG($rd$, (uint32_t)rslt64);
+	ASGN_NZ((uint32_t)rslt64);
+"
+}
+
+op umlal(----00001010:rn:rd:rs:1001:rm) {
+execute="
+	rslt64 = ((uint64_t)READ_REG($rn$)<<32) + (uint64_t)READ_REG($rd$);
+    rslt64 = (uint64_t)READ_REG($rm$) * (uint64_t)READ_REG($rs$) + rslt64;
+    WRITE_REG($rn$, (uint32_t)(rslt64>>32));
+    WRITE_REG($rd$, (uint32_t)rslt64);
+"
+}
+
+op umlal_s(----00001011:rn:rd:rs:1001:rm) {
+execute="
+	rslt64 = ((uint64_t)READ_REG($rn$)<<32) + (uint64_t)READ_REG($rd$);
+    rslt64 = (uint64_t)READ_REG($rm$) * (uint64_t)READ_REG($rs$) + rslt64;
+    WRITE_REG($rn$, (uint32_t)(rslt64>>32));
+    WRITE_REG($rd$, (uint32_t)rslt64);
+	ASGN_NZ((uint32_t)rslt64);
+"
+}
+
+op ldt_imm(----0100:ufld:011:rn:rd:imm12) {
+execute="
+	address = READ_REG($rn$);
+	current_mode = TRANSLATION_MODE(USR_MODE);
+	
+	MMU_READ_WORD(address,&rslt32);
+	TRANSLATION_MODE(current_mode);
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+
+	/*if (address&0x3)
+		rslt32 = rotate_right(rslt32, (address&0x3)<<3);*/
+
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op ldt_imm_b(----0100:ufld:111:rn:rd:imm12) {
+execute="
+	address = READ_REG($rn$);
+	current_mode = TRANSLATION_MODE(USR_MODE);
+
+			
+	MMU_READ_BYTE(address,&rslt8);
+	TRANSLATION_MODE(current_mode);
+
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$);
+	WRITE_REG($rd$, rslt8);
+"
+}
+
+op ldt_reg(----0110:ufld:011:rn:rd:imm_shifts) {
+execute="
+	offset = $imm_shifts$;
+	address = READ_REG($rn$);
+	current_mode = TRANSLATION_MODE(USR_MODE);
+
+	MMU_READ_WORD(address,&rslt32);
+	TRANSLATION_MODE(current_mode);
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+
+	/*if (address&0x3)
+		rslt32 = rotate_right(rslt32, (address&0x3)<<3);*/
+
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op ldt_reg_b(----0110:ufld:111:rn:rd:imm_shifts) {
+execute="
+	offset = $imm_shifts$;
+	address = READ_REG($rn$);
+	current_mode = TRANSLATION_MODE(USR_MODE);
+	
+	MMU_READ_BYTE(address,&rslt8);
+	TRANSLATION_MODE(current_mode);
+
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, rslt8);
+"
+}
+
+op ld1_imm(----0100:ufld:001:rn:rd:imm12) {
+execute="
+	address = READ_REG($rn$);
+	MMU_READ_WORD(address,&rslt32);
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+
+	/*if (address&0x3)
+		rslt32 = rotate_right(rslt32, (address&0x3)<<3);*/
+
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op ld1_imm_p(----0101:ufld:0:wfld:1:rn:rd:imm12) {
+execute="
+	address = $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$;
+	MMU_READ_WORD(address,&rslt32);
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+
+	/*if (address&0x3)
+		rslt32 = rotate_right(rslt32, (address&0x3)<<3);*/
+
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op ld1_imm_b(----0100:ufld:101:rn:rd:imm12) {
+execute="
+	address = READ_REG($rn$);
+	MMU_READ_BYTE(address,&rslt8);
+
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$);
+	WRITE_REG($rd$, rslt8);
+"
+}
+
+op ld1_imm_pb(----0101:ufld:1:wfld:1:rn:rd:imm12) {
+execute="
+	address = $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$;
+	MMU_READ_BYTE(address,&rslt8);
+
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	if($wfld$)
+		WRITE_REG($rn$, address);
+	WRITE_REG($rd$, rslt8);
+"
+}
+
+op ld1_reg(----0110:ufld:001:rn:rd:imm_shifts) {
+execute="
+	offset = $imm_shifts$;
+	address = READ_REG($rn$);
+	MMU_READ_WORD(address,&rslt32);
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+
+	/*if (address&0x3)
+		rslt32 = rotate_right(rslt32, (address&0x3)<<3);*/
+
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op ld1_reg_p(----0111:ufld:0:wfld:1:rn:rd:imm_shifts) {
+execute="
+	offset = $imm_shifts$;
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+	MMU_READ_WORD(address,&rslt32);
+	if (fault){
+		ABORT( DataAbortV );
+	}
+
+	/*if (address&0x3)
+		rslt32 = rotate_right(rslt32, (address&0x3)<<3);*/
+
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+	WRITE_REG($rd$, rslt32);
+"
+}
+
+op ld1_reg_b(----0110:ufld:101:rn:rd:imm_shifts) {
+execute="
+	offset = $imm_shifts$;
+	address = READ_REG($rn$);
+	
+	MMU_READ_BYTE(address,&rslt8);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, rslt8);
+"
+}
+
+op ld1_reg_pb(----0111:ufld:1:wfld:1:rn:rd:imm_shifts) {
+execute="
+	offset = $imm_shifts$;
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_READ_BYTE(address,&rslt8);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+	WRITE_REG($rd$, rslt8);
+"
+}
+
+op ld2_imm_h(----0000:ufld:1:-:1:rn:rd:imm4_1:1011:imm4_2)
+{
+execute="
+	offset = ($imm4_1$ << 4) | $imm4_2$;
+
+	address = READ_REG($rn$);
+
+	MMU_READ_HALF_WORD(address,&rslt16);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, rslt16);
+"
+}
+
+
+op ld2_imm_ph(----0001:ufld:1:wfld:1:rn:rd:imm4_1:1011:imm4_2)
+{
+execute="
+	offset = ($imm4_1$ << 4) | $imm4_2$;
+
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_READ_HALF_WORD(address,&rslt16);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	if ($wfld$)
+			WRITE_REG($rn$, address);
+	WRITE_REG($rd$, rslt16);
+"
+}
+
+op ld2_imm_s(----0000:ufld:1:-:1:rn:rd:imm4_1:1101:imm4_2)
+{
+execute="
+	offset = ($imm4_1$ << 4) | $imm4_2$;
+
+	address = READ_REG($rn$);
+	
+	MMU_READ_BYTE(address,&rslt8);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, (int8_t)rslt8);
+"
+}
+
+op ld2_imm_ps(----0001:ufld:1:wfld:1:rn:rd:imm4_1:1101:imm4_2)
+{
+execute="
+	offset = ($imm4_1$ << 4) | $imm4_2$;
+
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_READ_BYTE(address,&rslt8);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+
+	WRITE_REG($rd$, (int8_t)rslt8);
+"
+}
+
+
+op ld2_imm_hs(----0000:ufld:1:-:1:rn:rd:imm4_1:1111:imm4_2)
+{
+execute="
+	offset = ($imm4_1$ << 4) | $imm4_2$;
+
+	address = READ_REG($rn$);
+
+	MMU_READ_HALF_WORD(address,&rslt16);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, (int16_t)rslt16);
+
+"
+}
+
+op ld2_imm_phs(----0001:ufld:1:wfld:1:rn:rd:imm4_1:1111:imm4_2)
+{
+execute="
+	offset = ($imm4_1$ << 4) | $imm4_2$;
+
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_READ_HALF_WORD(address,&rslt16);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+	WRITE_REG($rd$, (int16_t)rslt16);
+"
+}
+
+op ld2_reg_h(----0000:ufld:0:-:1:rn:rd:0000:1011:rm)
+{
+execute="
+	offset = READ_REG($rm$);
+	address = READ_REG($rn$);
+
+	MMU_READ_HALF_WORD(address,&rslt16);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, rslt16);
+"
+}
+
+op ld2_reg_ph(----0001:ufld:0:wfld:1:rn:rd:0000:1011:rm)
+{
+execute="
+	offset = READ_REG($rm$);
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+
+	MMU_READ_HALF_WORD(address,&rslt16);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+	WRITE_REG($rd$, rslt16);
+"
+}
+
+op ld2_reg_s(----0000:ufld:0:-:1:rn:rd:0000:1101:rm)
+{
+execute="
+	offset = READ_REG($rm$);
+	address = READ_REG($rn$);
+	
+	MMU_READ_BYTE(address,&rslt8);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, (int8_t)rslt8);
+"
+}
+
+op ld2_reg_ps(----0001:ufld:0:wfld:1:rn:rd:0000:1101:rm)
+{
+execute="
+	offset = READ_REG($rm$);
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_READ_BYTE(address,&rslt8);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+	WRITE_REG($rd$, (int8_t)rslt8);
+"
+}
+
+op ld2_reg_hs(----0000:ufld:0:-:1:rn:rd:0000:1111:rm)
+{
+execute="
+	offset = READ_REG($rm$);
+	address = READ_REG($rn$);
+
+	MMU_READ_HALF_WORD(address,&rslt16);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	WRITE_REG($rd$, (int16_t)rslt16);
+"
+}
+
+op ld2_reg_phs(----0001:ufld:0:wfld:1:rn:rd:0000:1111:rm)
+{
+execute="
+	offset = READ_REG($rm$);
+
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_READ_HALF_WORD(address,&rslt16);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+	WRITE_REG($rd$, (int16_t)rslt16);
+"
+}
+
+op stt_imm(----0100:ufld:010:rn:rd:imm12)
+{
+execute="
+	address = READ_REG($rn$);
+	current_mode = TRANSLATION_MODE(USR_MODE);
+
+	MMU_WRITE_WORD(address, READ_REG($rd$));
+	TRANSLATION_MODE(current_mode);
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$);
+"
+}
+
+op stt_imm_b(----0100:ufld:110:rn:rd:imm12)
+{
+execute="
+	address = READ_REG($rn$);
+	current_mode = TRANSLATION_MODE(USR_MODE);
+	
+	MMU_WRITE_BYTE(address, READ_REG($rd$));
+	TRANSLATION_MODE(current_mode);
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$);
+"
+}
+
+op stt_reg(----0110:ufld:010:rn:rd:imm_shifts)
+{
+execute="
+    offset = $imm_shifts$;
+	address = READ_REG($rn$);
+	current_mode = TRANSLATION_MODE(USR_MODE);
+
+	MMU_WRITE_WORD(address, READ_REG($rd$));
+	TRANSLATION_MODE(current_mode);
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+"
+}
+
+op stt_reg_b(----0110:ufld:110:rn:rd:imm_shifts)
+{
+execute="
+    offset = $imm_shifts$;
+	address = READ_REG($rn$);
+	current_mode = TRANSLATION_MODE(USR_MODE);
+
+	MMU_WRITE_BYTE(address, READ_REG($rd$));
+	TRANSLATION_MODE(current_mode);
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+"
+}
+
+op st1_imm(----0100:ufld:000:rn:rd:imm12)
+{
+execute="
+	address = READ_REG($rn$);
+	MMU_WRITE_WORD(address, READ_REG($rd$));
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$);
+"
+}
+
+op st1_imm_p(----0101:ufld:0:wfld:0:rn:rd:imm12)
+{
+execute="
+	address = $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$;
+	MMU_WRITE_WORD(address, READ_REG($rd$));
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	if($wfld$)
+		WRITE_REG($rn$, address);
+"
+}
+
+op st1_imm_b(----0100:ufld:100:rn:rd:imm12)
+{
+execute="
+	address = READ_REG($rn$);
+	MMU_WRITE_BYTE(address, READ_REG($rd$));
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$);
+"
+}
+
+op st1_imm_pb(----0101:ufld:1:wfld:0:rn:rd:imm12)
+{
+execute="
+	address = $ufld$?READ_REG($rn$)+$imm12$:READ_REG($rn$)-$imm12$;
+	MMU_WRITE_BYTE(address, READ_REG($rd$));
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	if($wfld$)
+		WRITE_REG($rn$, address);
+"
+}
+
+op st1_reg(----0110:ufld:000:rn:rd:imm_shifts)
+{
+execute="
+    offset = $imm_shifts$;
+	address = READ_REG($rn$);
+
+	MMU_WRITE_WORD(address, READ_REG($rd$));
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+"
+}
+
+op st1_reg_p(----0111:ufld:0:wfld:0:rn:rd:imm_shifts)
+{
+execute="
+    offset = $imm_shifts$;
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_WRITE_WORD(address, READ_REG($rd$));
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	if($wfld$)
+		WRITE_REG($rn$, address);
+"
+}
+
+op st1_reg_b(----0110:ufld:100:rn:rd:imm_shifts)
+{
+execute="
+    offset = $imm_shifts$;
+	address = READ_REG($rn$);
+
+	MMU_WRITE_BYTE(address, READ_REG($rd$));
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+"
+}
+
+op st1_reg_pb(----0111:ufld:1:wfld:0:rn:rd:imm_shifts)
+{
+execute="
+    offset = $imm_shifts$;
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_WRITE_BYTE(address, READ_REG($rd$));
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	if($wfld$)
+		WRITE_REG($rn$, address);
+"
+}
+
+op st2_imm(----0000:ufld:1-0:rn:rd:imm4_1:1011:imm4_2)
+{
+execute="
+	offset = ($imm4_1$ << 4) | $imm4_2$;
+	address = READ_REG($rn$);
+
+	MMU_WRITE_HALF_WORD(address, READ_REG($rd$));
+	
+	if (fault){
+		ABORT( DataAbortV );
+	}
+
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+"
+}
+
+op st2_imm_p(----0001:ufld:1:wfld:0:rn:rd:imm4_1:1011:imm4_2)
+{
+execute="
+	offset = ($imm4_1$ << 4) | $imm4_2$;
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_WRITE_HALF_WORD(address, READ_REG($rd$));
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+"
+}
+
+op st2_reg(----0000:ufld:0-0:rn:rd:00001011:rm)
+{
+execute="
+	offset = READ_REG($rm$);
+	address = READ_REG($rn$);
+
+	MMU_WRITE_HALF_WORD(address, READ_REG($rd$));
+	
+	if (fault){
+		ABORT( DataAbortV );
+	}
+
+	WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+"
+}
+
+op st2_reg_p(----0001:ufld:0:wfld:0:rn:rd:00001011:rm)
+{
+execute="
+	offset = READ_REG($rm$);
+	address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+	MMU_WRITE_HALF_WORD(address, READ_REG($rd$));
+
+	if (fault){
+		ABORT( DataAbortV );
+	}
+
+	if ($wfld$)
+		WRITE_REG($rn$, address);
+"
+}
+
+op swap(----00010000:rn:rd:0000:1001:rm)
+{
+execute="
+	address = READ_REG($rn$);
+	MMU_READ_WORD(address,&rslt32);
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	MMU_WRITE_WORD(address, READ_REG($rm$));
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rd$,rslt32);
+"
+}
+
+op swap_byte(----00010100:rn:rd:0000:1001:rm)
+{
+execute="
+	address = READ_REG($rn$);
+	MMU_READ_BYTE(address,&rslt8);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	MMU_WRITE_BYTE(address, (uint8_t)READ_REG($rm$));
+	if (fault){
+		ABORT( DataAbortV );
+	}
+	WRITE_REG($rd$, (uint32_t)rslt8);
+"
+}
+
+
+
+op ldm1(----100:ldm_mode1:reg_mask)
+{
+execute="
+	pcount = popcount16($reg_mask$)*4;
+	
+	$ldm_mode1$
+	
+	address = start_addr-(start_addr&0x3);
+	iterator = rmo16($reg_mask$);
+	while (iterator<16) {
+		if ($reg_mask$&(1<<iterator)) {
+			MMU_READ_WORD(address, &val32);
+			if(fault){
+				WRITE_REG(($inst$>>16)&0xF, base_addr);
+				XSCALE_UPDATE_FSR_FAR(ARMul_CP15_R5_ST_ALIGN,address);
+				ABORT( DataAbortV );
+			}
+			WRITE_REG(iterator, val32);
+			address += 4;
+		}
+		iterator++;
+	}
+
+"
+}
+
+op ldm2(----100:ldm_mode2:0:reg_mask2)
+{
+execute="
+	pcount = popcount16($reg_mask2$)*4;
+	$ldm_mode2$
+
+	address = start_addr-(start_addr&0x3);
+	current_mode = CPU_MODE;
+	SWITCH_BANK(current_mode,USR_MODE);	
+
+	iterator = rmo16($reg_mask2$);
+	while (iterator<15) {
+		if ($reg_mask2$&(1<<iterator)) {
+			MMU_READ_WORD(address,&val32);
+			if(fault){
+				SWITCH_BANK(USR_MODE,current_mode);
+				WRITE_REG(($inst$>>16)&0xF, base_addr);
+				XSCALE_UPDATE_FSR_FAR(ARMul_CP15_R5_ST_ALIGN,address);
+				ABORT( DataAbortV );
+			}
+			WRITE_REG(iterator, val32);
+			address += 4;
+		}
+		iterator++;
+	}
+
+	SWITCH_BANK(USR_MODE,current_mode);	
+
+"
+}
+op ldm3(----100:ldm_mode3:1:reg_mask2)
+{
+execute="
+
+	pcount = popcount16($reg_mask2$)*4 + 4;
+	$ldm_mode3$
+
+	address = start_addr-(start_addr&0x3);
+	iterator = rmo16($reg_mask2$);
+	while (iterator<15) {
+		if ($reg_mask2$&(1<<iterator)) {
+			MMU_READ_WORD(address,&val32);
+			if(fault){
+				WRITE_REG(($inst$>>16)&0xF, base_addr);
+				XSCALE_UPDATE_FSR_FAR(ARMul_CP15_R5_ST_ALIGN,address);
+				ABORT( DataAbortV );
+			}
+			WRITE_REG(iterator, val32);
+			address += 4;
+		}
+		iterator++;
+	}
+
+	WRITE_CPSR(SPSR);
+	MMU_READ_WORD(address,&val32);
+	if(fault){
+		WRITE_REG(($inst$>>16)&0xF, base_addr);
+		XSCALE_UPDATE_FSR_FAR(ARMul_CP15_R5_ST_ALIGN,address);
+		ABORT( DataAbortV );
+	}
+
+	WRITE_REG(15, val32);
+
+
+"
+}
+
+op stm1(----100:stm_mode1:reg_mask)
+{
+execute="
+	pcount = popcount16($reg_mask$)*4;
+
+	$stm_mode1$
+
+	address = start_addr - (start_addr&0x3);
+
+	/* This is not perfect exception here since
+	   write may have been committed before exception occurs. */
+	iterator = rmo16($reg_mask$);
+	while (iterator<16) {
+		if ($reg_mask$&(1<<iterator)) {
+			MMU_WRITE_WORD(address, READ_REG(iterator));
+			if (fault){
+				WRITE_REG(($inst$>>16)&0xF, base_addr);
+				XSCALE_UPDATE_FSR_FAR(ARMul_CP15_R5_ST_ALIGN,address);
+				ABORT( DataAbortV );
+			}
+			address += 4;
+		}
+		iterator++;
+	}
+
+"
+}
+
+op stm2(----100:stm_mode2:reg_mask)
+{
+execute="
+	pcount = popcount16($reg_mask$)*4;
+
+	$stm_mode2$
+
+	address = start_addr - (start_addr&0x3);
+	current_mode = CPU_MODE;
+	SWITCH_BANK(current_mode,USR_MODE);
+
+	/* This is not perfect exception here since
+	   write may have been committed before exception occurs. */
+	iterator = rmo16($reg_mask$);
+	while (iterator<16) {
+		if ($reg_mask$&(1<<iterator)) {
+			MMU_WRITE_WORD(address, READ_REG(iterator));
+			if (fault){
+				SWITCH_BANK(USR_MODE,current_mode);
+				WRITE_REG(($inst$>>16)&0xF, base_addr);
+				XSCALE_UPDATE_FSR_FAR(ARMul_CP15_R5_ST_ALIGN,address);
+				ABORT( DataAbortV );
+			}
+			address += 4;
+		}
+		iterator++;
+	}
+	SWITCH_BANK(USR_MODE,current_mode);
+
+"
+}
+
+
+op branch(----1010:imm24) {
+ctarget="$pc$+((int32_t)($imm24$<<8)>>6)"
+}
+
+op branch_exchange(----00010010:1111:1111:1111:0001:rm) {
+execute="
+	if (READ_REG($rm$) & 1){
+		ABORT2(UndefinedInstrV);
+	}
+	WRITE_REG(15, READ_REG($rm$) & 0xFFFFFFFC);
+"
+}
+
+op branch_link(----1011:imm24) {
+execute="
+	WRITE_REG(LRIND, $pc$-4);
+"
+ctarget="$pc$+((int32_t)($imm24$<<8)>>6)"
+}
+
+op mrs(----000100001111:rd:000000000000) {
+execute="
+    WRITE_REG($rd$, CPSR);
+"
+}
+
+op mrs_r(----000101001111:rd:000000000000) {
+execute="
+    WRITE_REG($rd$, SPSR);
+"
+}
+
+op msri(----00110010:field_mask:1111:rotate_imm32) {
+execute="
+    rslt32 = $rotate_imm32$;
+    UPDATE_CPSR(rslt32, $field_mask$);
+"
+}
+
+op msri_r(----00110110:field_mask:1111:rotate_imm32) {
+execute="
+    rslt32 = $rotate_imm32$;
+    UPDATE_SPSR(rslt32, $field_mask$);
+"
+}
+
+op msr(----00010010:field_mask:111100000000:rm) {
+execute="
+    UPDATE_CPSR(READ_REG($rm$), $field_mask$);
+"
+}
+
+op msr_r(----00010110:field_mask:111100000000:rm) {
+execute="
+    UPDATE_SPSR(READ_REG($rm$), $field_mask$);
+"
+}
+
+op sc(----1111------------------------) {
+execute="
+	if ($inst$ == ABORTWORD && emu->abort_addr == ($pc$-8) ) {
+		/* A prefetch abort.  */
+		XSCALE_UPDATE_FSR_FAR(ARMul_CP15_R5_MMU_EXCPT, $pc$-8);
+		ABORT2(PrefetchAbortV);
+	}
+
+	DO_SWI($inst$);
+"
+}
+
+op cdp(----1110:----:----:----:cp_num:---0:----){
+execute="
+		
+	if (emu->copro[$cp_num$] == NULL){
+		ABORT2(UndefinedInstrV);
+	}
+
+	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
+		ABORT2(UndefinedInstrV);
+	}
+
+	
+	cpab = emu->copro[$cp_num$]->CDP(ARMul_FIRST, $inst$);
+	while (cpab == ARMul_BUSY) {
+		if (emu->int_pending ()) {
+			cpab = emu->copro[$cp_num$]->CDP(ARMul_INTERRUPT, $inst$);
+		}
+		else
+			cpab = emu->copro[$cp_num$]->CDP(ARMul_BUSY, $inst$);
+	}
+
+
+	if (cpab == ARMul_CANT){
+		ABORT2(UndefinedInstrV);
+	}
+
+"
+}
+
+op mcr(----1110:---0:----:rd:cp_num:---1:----){
+execute="
+
+	if (emu->copro[$cp_num$] == NULL){
+		ABORT2(UndefinedInstrV);
+	}
+
+	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
+		ABORT2(UndefinedInstrV);
+	}
+	
+	cpab = emu->copro[$cp_num$]->MCR(ARMul_FIRST, $inst$, READ_REG($rd$));
+
+	while (cpab == ARMul_BUSY) {
+		if (emu->int_pending ()) {
+			cpab = emu->copro[$cp_num$]->MCR(ARMul_INTERRUPT, $inst$, READ_REG($rd$));
+		}
+		else
+			cpab = emu->copro[$cp_num$]->MCR(ARMul_BUSY, $inst$, READ_REG($rd$));
+	}
+
+	if (cpab == ARMul_CANT){
+		ABORT2(UndefinedInstrV);
+	}
+"
+}
+
+op mrc(----1110:---1:----:rd:cp_num:---1:----){
+execute="	
+	if (emu->copro[$cp_num$] == NULL){
+		ABORT2(UndefinedInstrV);
+	}
+
+	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
+		ABORT2(UndefinedInstrV);
+	}
+	
+	cpab = emu->copro[$cp_num$]->MRC(ARMul_FIRST, $inst$, &val32);
+
+	while (cpab == ARMul_BUSY) {
+		if (emu->int_pending ()) {
+			cpab = emu->copro[$cp_num$]->MRC(ARMul_INTERRUPT, $inst$, &val32);
+		}
+		else
+			cpab = emu->copro[$cp_num$]->MRC(ARMul_BUSY, $inst$, &val32);
+	}
+
+	if (cpab == ARMul_CANT){
+		ABORT2(UndefinedInstrV);
+	}
+	
+	if ($rd$  == 15) {
+		ASGN_N ((val32 & (1<<31)) != 0);
+		ASGN_Z ((val32 & (1<<30)) != 0);
+		ASGN_C ((val32 & (1<<29)) != 0);
+		ASGN_V ((val32 & (1<<28)) != 0);
+	}
+	else{
+		WRITE_REG($rd$,val32);
+	}
+"
+}
+
+op ldc1(----110:ldc_mode1:----:cp_num:imm8){
+execute="
+	offset = $imm8$;
+	$ldc_mode1$;
+
+	if (emu->copro[$cp_num$] == NULL){
+		ABORT2(UndefinedInstrV);
+	}
+
+	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
+		ABORT2(UndefinedInstrV);
+	}
+	
+	cpab = emu->copro[$cp_num$]->LDC(ARMul_FIRST, $inst$, 0);
+
+	while (cpab == ARMul_BUSY) {
+		if (emu->int_pending ()) {
+			cpab = emu->copro[$cp_num$]->LDC(ARMul_INTERRUPT, $inst$, 0);
+		}
+		else
+			cpab = emu->copro[$cp_num$]->LDC(ARMul_BUSY, $inst$, 0);
+	}
+
+	if (cpab == ARMul_CANT){
+		ABORT2(UndefinedInstrV);
+	}
+
+	cpab = emu->copro[$cp_num$]->LDC(ARMul_TRANSFER, $inst$, 0);
+	MMU_READ_WORD(address,&rslt32);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+
+	cpab = emu->copro[$cp_num$]->LDC(ARMul_DATA, $inst$, rslt32);
+
+	while (cpab == ARMul_INC) {
+		address += 4;
+		MMU_READ_WORD(address,&rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+		cpab = emu->copro[$cp_num$]->LDC(ARMul_DATA, $inst$, rslt32);
+	}
+"	
+}
+
+op ldc2(----110:ldc_mode2:rn:----:cp_num:imm8){
+execute="
+	offset = $imm8$;
+	base_addr =  READ_REG($rn$);
+	$ldc_mode2$;
+
+	if (emu->copro[$cp_num$] == NULL){
+		ABORT2(UndefinedInstrV);
+	}
+
+	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
+		ABORT2(UndefinedInstrV);
+	}
+	
+	cpab = emu->copro[$cp_num$]->LDC(ARMul_FIRST, $inst$, 0);
+
+	while (cpab == ARMul_BUSY) {
+		if (emu->int_pending ()) {
+			cpab = emu->copro[$cp_num$]->LDC(ARMul_INTERRUPT, $inst$, 0);
+		}
+		else
+			cpab = emu->copro[$cp_num$]->LDC(ARMul_BUSY, $inst$, 0);
+	}
+
+	if (cpab == ARMul_CANT){
+		ABORT2(UndefinedInstrV);
+	}
+
+	WRITE_REG($rn$, address);
+	cpab = emu->copro[$cp_num$]->LDC(ARMul_TRANSFER, $inst$, 0);
+	MMU_READ_WORD(address,&rslt32);
+	if(fault){
+		WRITE_REG($rn$, base_addr);
+		ABORT( DataAbortV );
+	}
+	
+	address = start_addr;
+	cpab = emu->copro[$cp_num$]->LDC(ARMul_DATA, $inst$, rslt32);
+
+	while (cpab == ARMul_INC) {
+		address += 4;
+		MMU_READ_WORD(address,&rslt32);
+		if(fault){
+			WRITE_REG($rn$, base_addr);
+			ABORT( DataAbortV );
+		}
+		cpab = emu->copro[$cp_num$]->LDC(ARMul_DATA, $inst$, rslt32);
+	}
+"	
+}
+
+op stc1(----110:stc_mode1:----:cp_num:imm8){
+execute="
+	offset = $imm8$;
+	$stc_mode1$;
+
+	if (emu->copro[$cp_num$] == NULL){
+		ABORT2(UndefinedInstrV);
+	}
+
+	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
+		ABORT2(UndefinedInstrV);
+	}
+	
+	cpab = emu->copro[$cp_num$]->STC(ARMul_FIRST, $inst$, &rslt32);
+
+	while (cpab == ARMul_BUSY) {
+		if (emu->int_pending ()) {
+			cpab = emu->copro[$cp_num$]->STC(ARMul_INTERRUPT, $inst$, 0);
+		}
+		else
+			cpab = emu->copro[$cp_num$]->STC(ARMul_BUSY, $inst$, &rslt32);
+	}
+
+	if (cpab == ARMul_CANT){
+		ABORT2(UndefinedInstrV);
+	}
+
+	cpab = emu->copro[$cp_num$]->STC(ARMul_DATA, $inst$, &rslt32);
+	MMU_WRITE_WORD(address,rslt32);
+	if(fault){
+		ABORT( DataAbortV );
+	}
+	while (cpab == ARMul_INC) {
+		address += 4;
+		cpab = emu->copro[$cp_num$]->STC(ARMul_DATA, $inst$, &rslt32);
+		MMU_WRITE_WORD(address,rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+	}
+"	
+}
+
+op stc2(----110:stc_mode2:rn:----:cp_num:imm8){
+execute="
+	offset = $imm8$;
+	base_addr =  READ_REG($rn$);
+	$stc_mode2$;
+
+	if (emu->copro[$cp_num$] == NULL){
+		ABORT2(UndefinedInstrV);
+	}
+
+	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
+		ABORT2(UndefinedInstrV);
+	}
+	
+	cpab = emu->copro[$cp_num$]->STC(ARMul_FIRST, $inst$, &rslt32);
+
+	while (cpab == ARMul_BUSY) {
+		if (emu->int_pending ()) {
+			cpab = emu->copro[$cp_num$]->STC(ARMul_INTERRUPT, $inst$, 0);
+		}
+		else
+			cpab = emu->copro[$cp_num$]->STC(ARMul_BUSY, $inst$, &rslt32);
+	}
+
+	if (cpab == ARMul_CANT){
+		ABORT2(UndefinedInstrV);
+	}
+	
+	WRITE_REG($rn$, address);
+
+	address = start_addr;
+	cpab = emu->copro[$cp_num$]->STC(ARMul_DATA, $inst$, &rslt32);
+	MMU_WRITE_WORD(address,rslt32);
+	if(fault){
+		WRITE_REG($rn$, base_addr);
+		ABORT( DataAbortV );
+	}
+	while (cpab == ARMul_INC) {
+		address += 4;
+		cpab = emu->copro[$cp_num$]->STC(ARMul_DATA, $inst$, &rslt32);
+		MMU_WRITE_WORD(address,rslt32);
+		if(fault){
+			WRITE_REG($rn$, base_addr);
+			ABORT( DataAbortV );
+		}
+	}
+"	
+}
+op mra(----1100:0101:rn:rd:0000:0000:0000){
+execute="
+	if (emu->is_xscale()) {
+	/* XScale MRA insn.  Move accumulator into two registers.  */
+		val32 = (emu->accumulator >> 32) & 255;
+		if (val32 & 128)
+			val32 -= 256;
+		
+		WRITE_REG($rd$,emu->accumulator);
+		WRITE_REG($rn$,val32);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+op mar(----1100:0100:rn:rd:0000:0000:0000){
+execute="
+	if (emu->is_xscale()) {
+	/* XScale MAR insn.  Move two registers into accumulator.  */
+		emu->accumulator = READ_REG($rd$);
+		emu->accumulator += (uint64_t)READ_REG($rn$)<<32;
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+op clz(----00010110:1111:rd:1111:0001:rm){
+execute="
+	
+	if (emu->is_xscale()) {
+		val32=READ_REG($rm$);
+		if(val32==0){
+			WRITE_REG($rd$,32);
+		}
+		else{
+			for(rslt32=0;(val32 & 0x80000000) == 0; val32 <<=1)
+				rslt32++;
+			WRITE_REG($rd$,rslt32);
+		}
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"	
+}
+
+op ldd_imm(----0000:ufld:1:-:0:rn:rd:imm4_1:1101:imm4_2)
+{
+execute="
+	if (emu->is_xscale() ) {
+		if($rd$ & 1)
+			ABORT2(UndefinedInstrV);
+		
+		offset = ($imm4_1$ << 4) | $imm4_2$;
+
+		address = READ_REG($rn$);
+	
+		fault = NO_FAULT;
+
+		if(address & 7)/* Alignment violation.  */
+			ABORT( DataAbortV );
+
+		MMU_READ_WORD(address,&rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+		WRITE_REG($rd$, rslt32);
+		
+		MMU_READ_WORD(address+4,&rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+		WRITE_REG($rd$+1, rslt32);
+		
+		WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op ldd_imm_p(----0001:ufld:1:wfld:0:rn:rd:imm4_1:1101:imm4_2)
+{
+execute="
+	if (emu->is_xscale() ) {
+		if($rd$ & 1)
+			ABORT2(UndefinedInstrV);
+		
+		offset = ($imm4_1$ << 4) | $imm4_2$;
+	
+		address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+		
+		fault = NO_FAULT;
+
+		if(address & 7)/* Alignment violation.  */
+			ABORT( DataAbortV );
+
+		MMU_READ_WORD(address,&rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+		WRITE_REG($rd$, rslt32);
+		
+		MMU_READ_WORD(address+4,&rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+		WRITE_REG($rd$+1, rslt32);
+
+		if ($wfld$)
+			WRITE_REG($rn$, address);
+	
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op ldd_reg(----0000:ufld:0:-:0:rn:rd:0000:1101:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+		if($rd$ & 1)
+			ABORT2(UndefinedInstrV);
+
+		offset = READ_REG($rm$);
+		address = READ_REG($rn$);
+	
+		fault = NO_FAULT;
+
+		if(address & 7)/* Alignment violation.  */
+			ABORT( DataAbortV );
+
+		MMU_READ_WORD(address,&rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+		WRITE_REG($rd$, rslt32);
+		
+		MMU_READ_WORD(address+4,&rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+		WRITE_REG($rd$+1, rslt32);
+
+		WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op ldd_reg_p(----0001:ufld:0:wfld:0:rn:rd:0000:1101:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+		if($rd$ & 1)
+			ABORT2(UndefinedInstrV);
+	
+		offset = READ_REG($rm$);
+		address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+		fault = NO_FAULT;
+
+		if(address & 7)/* Alignment violation.  */
+			ABORT( DataAbortV );
+
+		MMU_READ_WORD(address,&rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+		WRITE_REG($rd$, rslt32);
+		
+		MMU_READ_WORD(address+4,&rslt32);
+		if(fault){
+			ABORT( DataAbortV );
+		}
+		WRITE_REG($rd$+1, rslt32);
+
+		if ($wfld$)
+			WRITE_REG($rn$, address);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op std_imm(----0000:ufld:1-0:rn:rd:imm4_1:1111:imm4_2)
+{
+execute="
+	if (emu->is_xscale() ) {
+		if($rd$ & 1)
+			ABORT2(UndefinedInstrV);
+	
+		offset = ($imm4_1$ << 4) | $imm4_2$;
+		address = READ_REG($rn$);
+
+		fault = NO_FAULT;
+
+		if(address & 7)/* Alignment violation.  */
+			ABORT( DataAbortV );
+
+		MMU_WRITE_WORD(address, READ_REG($rd$));
+		if (fault){
+			ABORT( DataAbortV );
+		}
+		MMU_WRITE_WORD(address+4, READ_REG($rd$+1));
+		if (fault){
+			ABORT( DataAbortV );
+		}
+
+		WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op std_imm_p(----0001:ufld:1:wfld:0:rn:rd:imm4_1:1111:imm4_2)
+{
+execute="
+	if (emu->is_xscale() ) {
+		if($rd$ & 1)
+			ABORT2(UndefinedInstrV);
+	
+		offset = ($imm4_1$ << 4) | $imm4_2$;
+		address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+		fault = NO_FAULT;
+
+		if(address & 7)/* Alignment violation.  */
+			ABORT( DataAbortV );
+
+		MMU_WRITE_WORD(address, READ_REG($rd$));
+		if (fault){
+			ABORT( DataAbortV );
+		}
+		MMU_WRITE_WORD(address+4, READ_REG($rd$+1));
+		if (fault){
+			ABORT( DataAbortV );
+		}
+
+		if ($wfld$)
+			WRITE_REG($rn$, address);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op std_reg(----0000:ufld:0-0:rn:rd:00001111:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+		if($rd$ & 1)
+			ABORT2(UndefinedInstrV);
+	
+		offset = READ_REG($rm$);
+		address = READ_REG($rn$);
+
+		fault = NO_FAULT;
+
+		if(address & 7)/* Alignment violation.  */
+			ABORT( DataAbortV );
+
+		MMU_WRITE_WORD(address, READ_REG($rd$));
+		if (fault){
+			ABORT( DataAbortV );
+		}
+		MMU_WRITE_WORD(address+4, READ_REG($rd$+1));
+		if (fault){
+			ABORT( DataAbortV );
+		}
+
+		WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op std_reg_p(----0001:ufld:0:wfld:0:rn:rd:00001111:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+		if($rd$ & 1)
+			ABORT2(UndefinedInstrV);
+
+		offset = READ_REG($rm$);
+		address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
+
+		fault = NO_FAULT;
+
+		if(address & 7)/* Alignment violation.  */
+			ABORT( DataAbortV );
+
+		MMU_WRITE_WORD(address, READ_REG($rd$));
+		if (fault){
+			ABORT( DataAbortV );
+		}
+		MMU_WRITE_WORD(address+4, READ_REG($rd$+1));
+		if (fault){
+			ABORT( DataAbortV );
+		}
+
+		if ($wfld$)
+			WRITE_REG($rn$, address);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op smla_xy(----00010000:rd:rn:rs:1:y_bit:x_bit:0:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+	/*  SMLAxy insn.  */
+		
+		val32 = READ_REG($rn$);
+		
+		op1 = READ_REG($rm$); 
+		op2 = READ_REG($rs$);
+
+		op1 = $x_bit$ ? op1>>16 : op1&0xFFFF;
+		op2 = $y_bit$ ? op2>>16 : op2&0xFFFF;
+						
+		if (op1 & 0x8000)
+			op1 -= 65536;
+		if (op2 & 0x8000)
+			op2 -= 65536;
+		
+		tmp32 = op1 * op2;
+		rslt32 = val32 + tmp32;
+		
+		WRITE_REG($rd$, rslt32);
+
+		ASGN_Q((val32^tmp32^-1) & (val32^rslt32));
+
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+op smlal_xy(----00010100:rn:rd:rs:1:y_bit:x_bit:0:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+	/*  SMLALxy insn.  */
+
+		op1 = READ_REG($rm$); 
+		op2 = READ_REG($rs$);
+
+		op1 = $x_bit$ ? op1>>16 : op1&0xFFFF;
+		op2 = $y_bit$ ? op2>>16 : op2&0xFFFF;
+						
+		if (op1 & 0x8000)
+			op1 -= 65536;
+		if (op2 & 0x8000)
+			op2 -= 65536;
+
+		rslt64 = ((uint64_t)READ_REG($rn$)<<32) + (uint64_t)READ_REG($rd$);
+		rslt64 = (int64_t)op1 * (int64_t)op2 +rslt64;
+
+		WRITE_REG($rn$, (uint32_t)(rslt64>>32));
+		WRITE_REG($rd$, (uint32_t)rslt64);
+
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op smlaw_y(----00010010:rd:rn:rs:1:y_bit:0:0:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+	/*  SMLAWy insn.  */
+		
+		val32  =  READ_REG($rn$);
+
+		op2 = READ_REG($rs$);
+		op2 = $y_bit$ ? op2>>16 : op2&0xFFFF;
+						
+		if (op2 & 0x8000)
+			op2 -= 65536;
+
+		tmp32  = (uint32_t)( (int64_t)READ_REG($rm$)*op2  >> 16);
+		rslt32 = val32 + tmp32;
+
+		WRITE_REG($rd$,rslt32);
+
+		ASGN_Q((val32^tmp32^-1) & (val32^rslt32));
+	
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op smul_xy(----00010110:rd:0000:rs:1:y_bit:x_bit:0:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+	/*  SMULxy insn.  */
+
+		op1 = READ_REG($rm$); 
+		op2 = READ_REG($rs$);
+
+		op1 = $x_bit$ ? op1>>16 : op1&0xFFFF;
+		op2 = $y_bit$ ? op2>>16 : op2&0xFFFF;
+
+		if (op1 & 0x8000)
+			op1 -= 65536;
+		if (op2 & 0x8000)
+			op2 -= 65536;
+
+		WRITE_REG($rd$,op1 * op2);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op smulw_y(----00010010:rd:0000:rs:1:y_bit:0:0:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+	/* SMULWy insn.  */
+
+		op2 = READ_REG($rs$);
+		op2 = $y_bit$ ? op2>>16 : op2&0xFFFF;
+						
+		if (op2 & 0x8000)
+			op2 -= 65536;
+
+		rslt32  = (uint32_t)( (int64_t)READ_REG($rm$)*op2  >> 16); 
+
+		WRITE_REG($rd$,rslt32);
+	
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op qadd(----00010000:rn:rd:0000:0101:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+	/*   QADD insn.  */
+
+		val32 = READ_REG($rm$); 
+		tmp32 = READ_REG($rn$);
+		rslt32 = val32 + tmp32;
+
+
+		if ((val32^tmp32^-1) & (val32^rslt32)){
+			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
+			SET_Q;
+		}
+		
+		WRITE_REG($rd$,rslt32);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op qdadd(----00010100:rn:rd:0000:0101:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+	/*   QDADD insn.  */
+
+		val32 = READ_REG($rm$);
+		tmp32 = READ_REG($rn$); 
+
+
+		if ((tmp32^tmp32^-1) & (tmp32^(tmp32<<1))){
+			tmp32 = ((tmp32<<2) & 0x80000000)? 0x7fffffff:0x80000000;
+			SET_Q;
+		}
+		else
+			tmp32<<=1;
+		
+		rslt32 = val32 + tmp32;
+		
+		if ((val32^tmp32^-1) & (val32^rslt32)){
+			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
+			SET_Q;
+		}
+		
+		WRITE_REG($rd$,rslt32);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op qsub(----00010010:rn:rd:0000:0101:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+	/*   QSUB insn.  */
+
+		val32 = READ_REG($rm$); 
+		tmp32 = READ_REG($rn$);
+		rslt32 = val32 - tmp32;
+
+
+		if ((val32^tmp32) & (val32^rslt32)){
+			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
+			SET_Q;
+		}
+		
+		WRITE_REG($rd$,rslt32);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+op qdsub(----00010110:rn:rd:0000:0101:rm)
+{
+execute="
+	if (emu->is_xscale() ) {
+	/*   QDSUB insn.  */
+
+		val32 = READ_REG($rm$);
+		tmp32 = READ_REG($rn$); 
+
+
+		if ((tmp32^tmp32^-1) & (tmp32^(tmp32<<1))){
+			tmp32 = ((tmp32<<2) & 0x80000000)? 0x7fffffff:0x80000000;
+			SET_Q;
+		}
+		else
+			tmp32<<=1;
+		
+		rslt32 = val32 - tmp32;
+		
+		if ((val32^tmp32) & (val32^rslt32)){
+			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
+			SET_Q;
+		}
+		
+		WRITE_REG($rd$,rslt32);
+	}
+	else
+		ABORT2(UndefinedInstrV);
+"
+}
+
+}

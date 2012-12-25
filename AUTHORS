@@ -1,0 +1,17 @@
+
+Authors:
+Wei Qin (weiqin@gmail.com)
+Joseph D'Errico (jderrico@gmail.com)
+Apisate Thammanomai (apisate@yahoo.com)
+
+
+Contributors:
+Artur Klauser improved the memory emulator in release 2.0.2.
+John Beniston and Stephen Li reported several emulator bugs.
+
+
+Acknowledgements:
+SimIt-ARM uses the elf loader and the system call interpreter
+from Microlib.org by Gilles Mouchard.
+SimIt-ARM borrows some system-level emulation code from Skyeye/Armulator.
+SimIt-ARM uses some ideas from QEMU to improve performance.

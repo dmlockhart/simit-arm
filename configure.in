@@ -1,0 +1,130 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_INIT(emulator/main.cpp)
+AM_INIT_AUTOMAKE(SimIt-ARM, 3.0)
+AM_CONFIG_HEADER(config.h:config.h.in)
+
+#if the user sets CXXFLAGS
+usr_CXXFLAGS=${CXXFLAGS+set}
+
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_RANLIB
+AC_PROG_INSTALL
+AM_PROG_LEX
+AC_PROG_YACC
+
+if AX_IS_GXX() then
+    cxxflags="-O3"
+else
+	AC_MSG_WARN(["CXX is not g++, cannot build compiled simulator"])
+fi
+
+# if the user does not set CXX flags, we set it
+if test "$usr_CXXFLAGS" != set; then
+
+  if AX_IS_GXX3OR4() then
+    cxxflags="$cxxflags -finline-limit=5000 -fomit-frame-pointer"
+  fi
+
+  if AX_CXX_FLAG_WORKS($cxxflags) then
+    CXXFLAGS=$cxxflags
+  else 
+    if AX_CXX_FLAG_WORKS(["-O3"]) then
+      CXXFLAGS="-O3"
+    fi
+  fi
+
+  # see if fpe flags are supported
+  # if AX_CXX_FLAG_WORKS([-msse2 -mfpmath=sse]) then
+  #    CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
+  #  FP_OPTION=" -msse2 -mfpmath=sse"
+  #  AC_SUBST([FP_OPTION])
+  # fi
+
+fi
+
+
+# check if user wants jit
+AC_ARG_ENABLE(jit,
+  [  --enable-jit  	Build just-in-time compiled-emulator],
+  [case "${enableval}" in
+     yes) jit=true ;;
+     no)  jit=false ;;
+     *) AC_MSG_ERROR(bad value ${enableval} for --enable-jit) ;;
+   esac],[jit=false])
+
+if test "x$jit" = xtrue; then
+	AC_CHECK_LIB(dl, dlerror, [jit=true],
+		[jit=false; AC_MSG_ERROR([libdl not found, can't enable JIT])])
+	AC_CHECK_LIB(pthread, pthread_testcancel, [jit=true],
+		[jit=false; AC_MSG_ERROR([libpthread not found, can't enable JIT])])
+fi
+
+AM_CONDITIONAL(ENABLE_JIT, test x$jit = xtrue)
+
+
+# check if user wants devel
+AC_ARG_ENABLE(devel,
+  [  --enable-devel	Build developer resources -- decgen and issgen],
+  [case "${enableval}" in
+     yes) devel=true ;;
+     no)  devel=false ;;
+     *) AC_MSG_ERROR(bad value ${enableval} for --enable-jit) ;;
+   esac],[devel=false])
+
+AM_CONDITIONAL(ENABLE_DEV, test x$devel = xtrue)
+
+
+# Check for gmp
+#AC_CHECK_LIB(gmp, __gmpz_init, , [AC_MSG_ERROR(
+#  [GNU MP not found, see http://swox.com/gmp])])
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h inttypes.h netinet/in.h stddef.h stdint.h stdlib.h string.h sys/socket.h sys/time.h sys/resource.h termios.h unistd.h])
+AC_PREFIX_DEFAULT("`pwd`/build")
+
+# Checks for typedefs, structures, and compiler characteristics.
+# AC_HEADER_STDBOOL
+AC_C_CONST
+AC_TYPE_UID_T
+AC_C_INLINE
+AC_C_BIGENDIAN
+AC_TYPE_MODE_T
+AC_TYPE_OFF_T
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_CHECK_MEMBERS([struct stat.st_blksize])
+AC_STRUCT_ST_BLOCKS
+AC_CHECK_MEMBERS([struct stat.st_rdev])
+AC_HEADER_TIME
+AC_CHECK_SIZEOF(char)
+AC_CHECK_SIZEOF(short)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(long long)
+
+# Checks for library functions.
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_LSTAT
+AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
+AC_FUNC_MALLOC
+AC_FUNC_MEMCMP
+AC_FUNC_MMAP
+AC_FUNC_REALLOC
+AC_FUNC_SELECT_ARGTYPES
+AC_TYPE_SIGNAL
+AC_FUNC_STAT
+AC_FUNC_STRTOD
+AC_CHECK_FUNCS([atexit inet_ntoa memset mkdir munmap rmdir select socket strcasecmp strchr strdup strncasecmp strrchr strstr strtoul strtoull])
+
+AC_CONFIG_FILES([Makefile
+				 issgen/Makefile
+				 decgen/Makefile
+				 emulator/Makefile
+				 jit/build_dll.hpp
+				 jit/Makefile])
+AC_OUTPUT
