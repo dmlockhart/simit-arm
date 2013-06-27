@@ -134,7 +134,7 @@ class copro6 : public arm_copro // pxa27x
 		copro6(arm_emulator *emu) : arm_copro(emu) {
 			last_creg = 0;
 		}
-	
+
 		unsigned LDC (unsigned type, word_t instr, word_t data){
 			return ARMul_CANT;
 		}
@@ -143,13 +143,13 @@ class copro6 : public arm_copro // pxa27x
 		}
 		unsigned MRC (unsigned type, word_t instr, word_t * value);
 		unsigned MCR (unsigned type, word_t instr, word_t value);
-	
+
 		unsigned CDP (unsigned type, word_t instr){
 			return ARMul_CANT;
 		}
-	
+
 		~copro6() {};
-	
+
 	private:
 		word_t last_creg;
 };
@@ -163,7 +163,7 @@ typedef struct xscale_cp14_reg_s
 class copro14:public arm_copro // XScale
 {
 	public:
-	
+
 		copro14(arm_emulator *emu) : arm_copro(emu) {
 			pxa_cp14_regs.cclkcfg = 0;
 			pxa_cp14_regs.pwrmode = 0;
@@ -176,11 +176,11 @@ class copro14:public arm_copro // XScale
 		}
 		unsigned MRC (unsigned type, word_t instr, word_t * value);
 		unsigned MCR (unsigned type, word_t instr, word_t value);
-	
+
 		unsigned CDP (unsigned type, word_t instr){
 			return ARMul_CANT;
 		}
-	
+
 		~copro14() {};
 
 	private:
@@ -201,18 +201,18 @@ class copro15 : public arm_copro
 			return ARMul_CANT;
 		}
 		unsigned MRC (unsigned type, word_t instr, word_t * value){
-			if (emu->is_xscale()) 
+			if (emu->is_xscale())
 				* value= emu->mmu->xscale_mrc(instr);
 			else
 				* value= emu->mmu->mrc(instr);
-			return ARMul_DONE; 
+			return ARMul_DONE;
 		}
 		unsigned MCR (unsigned type, word_t instr, word_t value){
-			if (emu->is_xscale()) 
+			if (emu->is_xscale())
 				emu->mmu->xscale_mcr(instr,value);
 			else
 				emu->mmu->mcr(instr,value);
-			return ARMul_DONE; 
+			return ARMul_DONE;
 		}
 		unsigned CDP (unsigned type, word_t instr){
 			return ARMul_CANT;

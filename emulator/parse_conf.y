@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,6 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 %{
 
 #include <vector>
@@ -233,7 +234,7 @@ valist: STR {
 
 reg: REG COLON IDENT EQUAL HCONST SEMI {
 		$$ = new reginit_info_t;
-		$$->id = arm_decode_regname($3);	
+		$$->id = arm_decode_regname($3);
 		if ($$->id==-1)
 		{
 			conf_error("Unknown register");
@@ -245,7 +246,7 @@ reg: REG COLON IDENT EQUAL HCONST SEMI {
 	}
 	| REG COLON IDENT EQUAL DCONST SEMI {
 		$$ = new reginit_info_t;
-		$$->id = arm_decode_regname($3);	
+		$$->id = arm_decode_regname($3);
 		if ($$->id==-1)
 		{
 			conf_error("Unknown register");

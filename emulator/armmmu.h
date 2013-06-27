@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,6 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 /*
     armmmu.c - Memory Management Unit emulation.
     ARMulator extensions for the ARM7100 family.
@@ -86,9 +87,9 @@ typedef enum mmu_fault_t
 	PAGE_DOMAIN_FAULT = 0xB,
 	SECTION_PERMISSION_FAULT = 0xD,
 	SUBPAGE_PERMISSION_FAULT = 0xF,
-	/* this is for speed up checking access permisssion */	
+	/* this is for speed up checking access permisssion */
 	SLOW_ACCESS_CHECKING = 0x3,
-	/* this is for jit self-mofifying code check*/	
+	/* this is for jit self-mofifying code check*/
 	JIT_ALARM_FAULT = 0xff,
 } mmu_fault_t;
 #endif
@@ -168,7 +169,7 @@ class arm_mmu {
 		mmu_fault_t read_byte (word_t virt_addr, byte_t  *data){
 
 			mmu_page_table_entry_t * pte = d_table + MMU_HASH_INDEX(virt_addr);
-						
+
 			if (pte->read_tag == (virt_addr & mask_array[MMU_BYTE - 1])){
 				DIRECT_READ_BYTE((pte->ptr+virt_addr),(*data));
 				return NO_FAULT;
@@ -180,7 +181,7 @@ class arm_mmu {
 		mmu_fault_t read_hword (word_t virt_addr, hword_t *data){
 
 			mmu_page_table_entry_t * pte = d_table + MMU_HASH_INDEX(virt_addr);
-			
+
 			if (pte->read_tag == (virt_addr & mask_array[MMU_HALF - 1])){
 				DIRECT_READ_HALF_WORD((pte->ptr+virt_addr),(*data));
 				return NO_FAULT;
@@ -192,7 +193,7 @@ class arm_mmu {
 		mmu_fault_t read_word (word_t virt_addr, word_t  *data){
 
 			mmu_page_table_entry_t * pte = d_table + MMU_HASH_INDEX(virt_addr);
-			
+
 			if (pte->read_tag == (virt_addr & mask_array[MMU_WORD - 1])){
 				DIRECT_READ_WORD((pte->ptr+virt_addr),(*data));
 				return NO_FAULT;
@@ -204,7 +205,7 @@ class arm_mmu {
 		mmu_fault_t write_byte (word_t virt_addr, byte_t  data){
 
 			mmu_page_table_entry_t * pte = d_table + MMU_HASH_INDEX(virt_addr);
-			
+
 			if (pte->write_tag == (virt_addr & mask_array[MMU_BYTE - 1])){
 				DIRECT_WRITE_BYTE((pte->ptr+virt_addr),data);
 				return NO_FAULT;
@@ -216,7 +217,7 @@ class arm_mmu {
 		mmu_fault_t write_hword (word_t virt_addr, hword_t data) {
 
 			mmu_page_table_entry_t * pte = d_table + MMU_HASH_INDEX(virt_addr);
-			
+
 			if (pte->write_tag == (virt_addr & mask_array[MMU_HALF - 1])){
 				DIRECT_WRITE_HALF_WORD((pte->ptr+virt_addr),data);
 				return NO_FAULT;
@@ -241,7 +242,7 @@ class arm_mmu {
 		mmu_fault_t load_instr (word_t virt_addr, word_t  *instr) {
 
 			mmu_page_table_entry_t * pte = i_table + MMU_HASH_INDEX(virt_addr);
-			
+
 			if (pte->read_tag == (virt_addr & MMU_HASH_MASK)){
 				DIRECT_READ_WORD((pte->ptr+virt_addr),(*instr));
 				return NO_FAULT;
@@ -249,17 +250,17 @@ class arm_mmu {
 			else
 				return load_instr_slow(virt_addr,instr);
 		}
-		
-		/* translates virtual instruction addr into physical address 
+
+		/* translates virtual instruction addr into physical address
 			for jit directory */
-		mmu_fault_t translate_instr_addr (word_t virt_addr, word_t *phys_addr, 
+		mmu_fault_t translate_instr_addr (word_t virt_addr, word_t *phys_addr,
 			byte_t **ptr){
 
 			mmu_page_table_entry_t * pte = i_table + MMU_HASH_INDEX(virt_addr);
 
 			if (pte->read_tag == (virt_addr & MMU_HASH_MASK)){
 				*phys_addr = (pte->phys_addr + virt_addr);
-				*ptr = (pte->ptr + virt_addr); 	
+				*ptr = (pte->ptr + virt_addr);
 				return NO_FAULT;
 			}
 			else{
@@ -271,10 +272,10 @@ class arm_mmu {
 		/* The MMU(copro 15) is accessible via MCR and MRC operations */
 		word_t mrc (word_t instr);
 		void mcr (word_t instr, word_t value);
-		
+
 		/* evaluate all tlb entris access permision due to condition changeing*/
 		void evaluate_access_all	(void);
-		
+
 		word_t high_vector(word_t vector) {
 			if (control & CONTROL_VECTOR)
 				return(vector + 0xffff0000); //for v4 high exception address
@@ -286,12 +287,12 @@ class arm_mmu {
 			fault_status =  (fault | (last_domain << 4))& 0xFF;
 			fault_address = addr;
 		}
-	
 
-	
+
+
 		/*XScale functions*/
-	
-		void set_xscale(void){	
+
+		void set_xscale(void){
 			set_control(0);
 			cache_type = 0xB1AA1AA;  //0000 1011 0001 1010 1010 0001 1010 1010
 			aux_control = 0;
@@ -299,20 +300,20 @@ class arm_mmu {
 
 		word_t xscale_mrc (word_t instr);
 		void xscale_mcr (word_t instr, word_t value);
-		
+
 		void xscale_update_fsr_far (word_t fsr, word_t far){
 			if (emu->is_xscale()) {
 				fault_status = fsr & 0x6FF;
 				fault_address = far;
 			}
 		}
-			
+
 		bool cp_access_allowed (unsigned cpnum) {
 			if (emu->is_xscale())
 				return (copro_access & (1 << cpnum));
 			else
 				return true;
-		}	
+		}
 
 
 	private:
@@ -320,7 +321,7 @@ class arm_mmu {
 		/* translates virtual instruction addr into physical address */
 		mmu_fault_t translate_data_addr_slow (word_t virt_addr,
 				mmu_access_t read, mmu_size_t s,word_t *phys_addr);
-		
+
 		/* data access routines */
 		mmu_fault_t read_byte_slow    (word_t virt_addr, byte_t  *data);
 		mmu_fault_t read_hword_slow   (word_t virt_addr, hword_t *data);
@@ -332,23 +333,23 @@ class arm_mmu {
 		/* translates virtual instruction addr into physical address */
 		mmu_fault_t translate_instr_addr_slow (word_t virt_addr,
 			word_t *phys_addr);
-	
+
 		/* load instruction uses itlb */
 		mmu_fault_t load_instr_slow (word_t virt_addr, word_t *instr);
-		
+
 
 		/*retrive the page table entry from memory and save to designate TLB*/
 		mmu_fault_t translation_walk (word_t virt_addr, tlb_entry_t *tlb_e);
-		
+
 		/*access permission calculating functions*/
 		void evaluate_access_entry	(int fast_access, tlb_entry_t *tlb_e);
 		mmu_fault_t check_access	(word_t virt_addr, tlb_entry_t *e,
 									mmu_access_t read);
 		int check_perms	(int ap, mmu_access_t rread) const;
-		
+
 		/*set the value of control register*/
 		void set_control(word_t value);
-		
+
 		/*set the value of process_id register*/
 		void set_process_id(word_t value);
 
@@ -369,8 +370,8 @@ class arm_mmu {
 			if (process_id == 0)
 				return va;
 			else if (va & MMU_PID_VA_MAP_MASK)
-				return va; 
-			else 
+				return va;
+			else
 				return va | process_id;
 		}
 
@@ -380,7 +381,7 @@ class arm_mmu {
 				tlb_entry_t *tlb_e,word_t phys_addr,word_t virt_addr);
 		void remove_mmu_page_entry(mmu_page_table_entry_t *x_table,
 				tlb_entry_t *tlb_e);
-		
+
 
 	protected:
 
@@ -414,7 +415,7 @@ class arm_mmu {
 		/* FAST LOOK UP TABLE*/
 		mmu_page_table_entry_t	i_table[MMU_HASH_SIZE];
 		mmu_page_table_entry_t	d_table[MMU_HASH_SIZE];
-	
+
 		tlb_entry_t dummy_entry;
 
 		word_t mask_array[4];
@@ -447,14 +448,14 @@ class arm_mmu {
 			fcheck = fc;
 			falarm = fa;
 		}
-	
+
 		/* jit simulator calls this when a block is scheduled to be compiled */
 		void invalidate_write_cache(arm_addr_t virt_addr) {
 			mmu_page_table_entry_t * pte = d_table + MMU_HASH_INDEX(virt_addr);
 			if (pte->write_tag == (virt_addr & MMU_HASH_MASK))
 				pte->write_tag = 0xFFFFFFFF;
 		}
-	
+
 	private:
 
 		void *wchecker;

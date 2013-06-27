@@ -115,7 +115,7 @@ Elf32_Ehdr *ReadElfHeader(FILE *f)
 		free(hdr);
 		return NULL;
 	}
-	
+
 	if(hdr->e_ident[EI_MAG0] != 0x7f ||
 	   hdr->e_ident[EI_MAG1] != 'E' ||
 	   hdr->e_ident[EI_MAG2] != 'L' ||
@@ -124,10 +124,10 @@ Elf32_Ehdr *ReadElfHeader(FILE *f)
 		free(hdr);
 		return NULL;
 	}
-	
+
 	hdr = (Elf32_Ehdr *) realloc(hdr, hdr->e_ehsize);
 
-	AdjustElfHeader(hdr);	
+	AdjustElfHeader(hdr);
 	return hdr;
 }
 
@@ -136,13 +136,13 @@ Elf32_Phdr *ReadProgramHeaders(Elf32_Ehdr *hdr, FILE *f)
 	int i;
 	unsigned long sz = hdr->e_phnum * hdr->e_phentsize;
 	Elf32_Phdr *phdr = (Elf32_Phdr *) malloc(sz);
-	
+
 	fseek(f, hdr->e_phoff, SEEK_SET);
 	fread(phdr, sz, 1, f);
-	
+
 	for(i = 0; i < hdr->e_phnum; i++)
 		AdjustProgramHeader(hdr, phdr + i);
-	
+
 	return phdr;
 }
 
@@ -151,7 +151,7 @@ Elf32_Shdr *ReadSectionHeaders(Elf32_Ehdr *hdr, FILE *f)
 	int i;
 	unsigned long sz = hdr->e_shnum * hdr->e_shentsize;
 	Elf32_Shdr *shdr = (Elf32_Shdr *) malloc(sz);
-	
+
 	if(fseek(f, hdr->e_shoff, SEEK_SET) != 0)
 	{
 		free(shdr);
@@ -165,7 +165,7 @@ Elf32_Shdr *ReadSectionHeaders(Elf32_Ehdr *hdr, FILE *f)
 
 	for(i = 0; i < hdr->e_shnum; i++)
 		AdjustSectionHeader(hdr, shdr + i);
-	
+
 	return shdr;
 }
 
@@ -178,7 +178,7 @@ char *LoadStringTable(Elf32_Ehdr *hdr, Elf32_Shdr *shdr_table, FILE *f)
 	string_table = (char *) malloc(shdr->sh_size);
 	fseek(f, shdr->sh_offset, SEEK_SET);
 	fread(string_table, shdr->sh_size, 1, f);
-	
+
 	return string_table;
 }
 
@@ -193,7 +193,7 @@ void DumpElfHeader(Elf32_Ehdr *hdr)
 		case ELFCLASS64 : printf("64-bit objects"); break;
 		default : printf("?"); break;
 	}
-	
+
 	printf("\nData encoding : ");
 	switch(hdr->e_ident[EI_DATA])
 	{
@@ -201,9 +201,9 @@ void DumpElfHeader(Elf32_Ehdr *hdr)
 		case ELFDATA2LSB : printf("2's complement, little endian"); break;
 		case ELFDATA2MSB : printf("2's complement, big endian"); break;
 	}
-	
-	printf("\nVersion : %u", (unsigned int) hdr->e_ident[EI_VERSION]);	
-	
+
+	printf("\nVersion : %u", (unsigned int) hdr->e_ident[EI_VERSION]);
+
 /* 	printf("\nOS ABI identification : "); */
 /* 	switch(hdr->e_ident[EI_OSABI]) */
 /* 	{ */
@@ -213,9 +213,9 @@ void DumpElfHeader(Elf32_Ehdr *hdr)
 /* 		case ELFOSABI_STANDALONE : printf("Standalone (embedded) application"); */
 /* 		default : printf("?"); */
 /* 	} */
-	
+
 	printf("\nObject File Type : ");
-	
+
 	switch(hdr->e_type)
 	{
 		case ET_NONE : printf("No file type"); break;
@@ -228,9 +228,9 @@ void DumpElfHeader(Elf32_Ehdr *hdr)
 		case ET_HIPROC : printf("Processor-specific"); break;
 		default : printf("?");
 	}
-	
+
 	printf("\nTarget machine : ");
-	
+
 /* 	switch(hdr->e_machine) */
 /* 	{ */
 /* 		case EM_NONE : printf("No machine"); break; */
@@ -273,11 +273,11 @@ void DumpElfHeader(Elf32_Ehdr *hdr)
 /* 		case EM_68HC12 : printf("Motorola M68HC12"); break; */
 /* 		default: printf("?"); */
 /* 	} */
-	
+
 	printf("\nNumber of program headers : %u", hdr->e_phnum);
-	
+
 	printf("\nNumber of section headers : %u", hdr->e_shnum);
-	
+
 	printf("\n");
 }
 
@@ -286,7 +286,7 @@ void DumpProgramHeader(Elf32_Phdr *phdr)
 	printf("--- Program Header ---");
 	printf("\nSegment type : ");
 	switch(phdr->p_type)
-	{	
+	{
 		case PT_NULL: printf("Program header table entry unused"); break;
 		case PT_LOAD: printf("Loadable program segment"); break;
 		case PT_DYNAMIC: printf("Dynamic linking information"); break;
@@ -299,7 +299,7 @@ void DumpProgramHeader(Elf32_Phdr *phdr)
 		case PT_LOPROC: printf("Start of processor-specific"); break;
 		case PT_HIPROC: printf("End of processor-specific"); break;
 	}
-	
+
 	printf("\nFile offset : 0x%lx", (unsigned long) phdr->p_offset);
 	printf("\nVirtual Address : 0x%lx", (unsigned long) phdr->p_vaddr);
 	printf("\nPhysical Address : 0x%lx", (unsigned long) phdr->p_paddr);
@@ -323,7 +323,7 @@ void DumpSectionHeader(Elf32_Shdr *shdr, char *string_table)
 	printf("--- Section header ---");
 	printf("\nSection name : %s", string_table + shdr->sh_name);
 	printf("\nSection type : ");
-	
+
 	switch(shdr->sh_type)
 	{
 		case SHT_NULL: printf("Section header table entry unused"); break;
@@ -347,14 +347,14 @@ void DumpSectionHeader(Elf32_Shdr *shdr, char *string_table)
 /* 		case SHT_GNU_versym: printf("Version symbol table."); break; */
 		default : printf("?");
 	}
-	
+
 	printf("\nSection flags : ");
-	
+
 	if(shdr->sh_flags & SHF_WRITE) printf("\n - Writable");
 	if(shdr->sh_flags & SHF_ALLOC) printf("\n - Occupies memory during execution");
 	if(shdr->sh_flags & SHF_EXECINSTR) printf("\n - Executable");
 	if(shdr->sh_flags & SHF_MASKPROC) printf("\n - Processor-specific");
-	
+
 	printf("\nFile offset : 0x%x", shdr->sh_offset);
 	printf("\nVirtual Address : 0x%x", shdr->sh_addr);
 
@@ -366,7 +366,7 @@ Elf32_Shdr *GetTextSection(Elf32_Ehdr *hdr, Elf32_Shdr *shdr_table, char
 {
 	Elf32_Shdr *shdr = shdr_table;
 	int i;
-	
+
 	for(i = 0; i < hdr->e_shnum; i++)
 	{
 		if(shdr[i].sh_type == SHT_PROGBITS &&
@@ -384,7 +384,7 @@ Elf32_Shdr *GetDataSection(Elf32_Ehdr *hdr, Elf32_Shdr *shdr_table, char *string
 {
 	Elf32_Shdr *shdr = shdr_table;
 	int i;
-	
+
 	for(i = 0; i < hdr->e_shnum; i++)
 	{
 		if(shdr[i].sh_type == SHT_PROGBITS &&
@@ -402,7 +402,7 @@ Elf32_Shdr *GetBSSSection(Elf32_Ehdr *hdr, Elf32_Shdr *shdr_table, char *string_
 {
 	Elf32_Shdr *shdr = shdr_table;
 	int i;
-	
+
 	for(i = 0; i < hdr->e_shnum; i++)
 	{
 		if(shdr[i].sh_type == SHT_NOBITS &&
@@ -453,7 +453,7 @@ Elf32_Shdr *GetSymbolTableSection(Elf32_Ehdr *hdr, Elf32_Shdr *shdr_table, char 
 {
 	Elf32_Shdr *shdr = shdr_table;
 	int i;
-	
+
 	for(i = 0; i < hdr->e_shnum; i++)
 	{
 		if(shdr[i].sh_type == SHT_SYMTAB &&
@@ -469,7 +469,7 @@ Elf32_Shdr *GetSymbolStringTableSection(Elf32_Ehdr *hdr, Elf32_Shdr *shdr_table,
 {
 	Elf32_Shdr *shdr = shdr_table;
 	int i;
-	
+
 	for(i = 0; i < hdr->e_shnum; i++)
 	{
 		if(shdr[i].sh_type == SHT_STRTAB &&
@@ -485,9 +485,9 @@ Elf32_Sym *LoadSymbolTable(Elf32_Ehdr *hdr, Elf32_Shdr *shdr_table, char *string
 {
 /*	Elf32_Shdr *shdr = GetSymbolTableSection(hdr, shdr_table, string_table);*/
 	Elf32_Word size = GetSectionSize(shdr_table);
-	
+
 	Elf32_Sym *symbol_table = (Elf32_Sym *) malloc(size);
-	
+
 	return LoadSection(shdr_table, symbol_table, f) ? NULL : symbol_table;
 }
 
@@ -495,7 +495,7 @@ Elf32_Sym *GetSymbol(Elf32_Sym *symbol_table, Elf32_Shdr *shdr_symbol_table, cha
 *string_table)
 {
 	unsigned int i;
-	
+
 	for(i = 0; i < shdr_symbol_table->sh_size / shdr_symbol_table->sh_entsize; i++)
 	{
 		if(strcmp(name, GetSymbolName(symbol_table[i].st_name, string_table)) == 0)

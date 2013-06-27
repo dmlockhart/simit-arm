@@ -2,7 +2,6 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -98,12 +97,12 @@ static void sig_handler(int signum)
 	}
 #if 0
     else if (signum==SIGUSR1) {
-        mltr->seg_fault();                                     
-                                                              
+        mltr->seg_fault();
+
         fprintf(stderr, "Error accessing memory, address = %08x, code = %d\n",
             mltr->mem->get_last_faddr(), mltr->mem->get_last_fault());
-                                                              
-        exit(1);                                              
+
+        exit(1);
     }
 #endif
 }
@@ -112,8 +111,8 @@ static void setup_signals()
 {
 	struct sigaction act;
 
-	memset(&act, 0, sizeof(act));                             
-	act.sa_handler = sig_handler;                        
+	memset(&act, 0, sizeof(act));
+	act.sa_handler = sig_handler;
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGTERM, &act, NULL);
 }
@@ -122,8 +121,8 @@ static void clear_signals()
 {
 	struct sigaction act;
 
-	memset(&act, 0, sizeof(act));                             
-	act.sa_handler = SIG_DFL;                        
+	memset(&act, 0, sizeof(act));
+	act.sa_handler = SIG_DFL;
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGTERM, &act, NULL);
 }
@@ -170,13 +169,13 @@ int main(int argc, char *argv[], char *envp[])
 	for(i = 1; i < argc; i++)
 	{
 		if(strcmp(argv[i], "-s") == 0){
-			conf_name = argv[++i]; 
+			conf_name = argv[++i];
 		}
 		else if(strcmp(argv[i], "-l") == 0) {
 			shift_val = ilog2((uint32_t)atof(argv[++i]));
 			shift_set = true;
 		}
-		else if(strcmp(argv[i], "-m") == 0){ 
+		else if(strcmp(argv[i], "-m") == 0){
 			max_inum = ato_uint64(argv[++i]);
 		}
 		else if(strcmp(argv[i], "-t") == 0) {
@@ -258,7 +257,7 @@ int main(int argc, char *argv[], char *envp[])
 		signal(SIGPIPE, SIG_IGN);
 		signal(SIGUSR1, SIG_IGN);
 		setup_signals();
-	
+
 		/* tralsnation cache */
 		if (!mltr->setup_cache(prog_name))
 			exit(1);
@@ -272,7 +271,7 @@ int main(int argc, char *argv[], char *envp[])
 			pthread_create(tid + nserver + i, NULL, &compile_thread2, mltr);
 
 #if HAVE_SYS_RESOURCE_H && HAVE_SYS_TIME_H
-	
+
 		struct timeval begin_u, end_u, begin_s, end_s,
 				cbegin_u, cend_u, cbegin_s, cend_s;
 		struct rusage usg, cusg;
@@ -291,7 +290,7 @@ int main(int argc, char *argv[], char *envp[])
 					"Warning: -m ignored for user level jit simulation.\n");
 			else
 				mltr->set_max_count(max_inum << 20);
-		
+
 		uint64_t icount;
 
 		icount = mltr->run();
@@ -358,7 +357,7 @@ int main(int argc, char *argv[], char *envp[])
 					mltr->get_server_compile_count(ii + nserver));
 
 		}
-		
+
 		if (!user_level)term_exit();
 	}
 	else usage(argv[0]);
@@ -367,4 +366,3 @@ int main(int argc, char *argv[], char *envp[])
 
 	return 0;
 }
-

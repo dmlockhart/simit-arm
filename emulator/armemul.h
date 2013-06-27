@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -74,10 +74,10 @@ const word_t ABORTWORD = 0xefffffff;   /* SWI -1 */
 
 /* forward declaration of some member classes */
 class arm_mmu;
-class arm_io;	
+class arm_io;
 class arm_copro;
 
-class arm_emulator 
+class arm_emulator
 {
 
   public:
@@ -189,7 +189,7 @@ class arm_emulator
 	void raise_exception (ex_vector_t vector);
 
 	/******************************************************************
-	   register access interfaces 
+	   register access interfaces
 	 *****************************************************************/
 	word_t get_pc() const {return my_regs.gpr[PC_REAL_IND];}
 
@@ -224,7 +224,7 @@ class arm_emulator
 
 	word_t read_spsr() const
 	{
-		if (bank) //not User Bank = has spsr = Exception Mode 
+		if (bank) //not User Bank = has spsr = Exception Mode
 			return my_regs.spsr[bank];/*----add processor mode and bank----*/
 		else
 			return read_cpsr();
@@ -246,7 +246,7 @@ class arm_emulator
 
 
 	/******************************************************************
-	   The CC access functions below are for compiled simulators  
+	   The CC access functions below are for compiled simulators
 	 *****************************************************************/
 	word_t read_NZF() const {return my_regs.NZF;}
 	word_t read_CF() const {return my_regs.CF;}
@@ -281,7 +281,7 @@ class arm_emulator
     /* instruction counters, used by the compiled simulator */
     void increment_compile_count(uint32_t val) {ccount += val;}
     void increment_interpret_count(uint32_t val) {icount += val;}
- 
+
 	/* stats output */
 	void dump_instruction_counters(FILE *);
 
@@ -323,7 +323,7 @@ class arm_emulator
 	arm_inst_t fetch_inst_system(arm_addr_t addr);
 
 	/* fetch an instruction in user level */
-	arm_inst_t fetch_inst_user(arm_addr_t addr) 
+	arm_inst_t fetch_inst_user(arm_addr_t addr)
 	{
 		word_t inst;
 		mem->read_word(addr, &inst);
@@ -379,7 +379,7 @@ class arm_emulator
 		word_t gpr[NUM_GPR];
 		word_t cpsr;
 		word_t spsr[7];
-		
+
 
 		/* extra copy of NCZV flags, used to accelerate interpretation */
 		word_t cc;
@@ -392,7 +392,7 @@ class arm_emulator
 		/* extra copy of cpsr bits, used to accelerate interpretation */
 		word_t i_flag; // bit 7 of cpsr: Disables IRQ interrupts when set
 		word_t f_flag; // bit 6 of cpsr: Disables FIQ interrupts when set
-	
+
 		/* Big member stays in the back so that the compiled can use
 		*  small offsets for all previous members. Small offsets reduce
 		*  code size on x86.
@@ -416,7 +416,7 @@ class arm_emulator
 	 *****************************************************************/
 	int retcode;	// valid on ST_EXIT
 
-	enum status_t 
+	enum status_t
 	{
 		ST_RESET,		// just reset, empty
 		ST_IDLE,		// program loaded
@@ -465,7 +465,7 @@ class arm_emulator
   public:
 
 	/******************************************************************
-	   some less frequently used members 
+	   some less frequently used members
 	 *****************************************************************/
 
 	/* io */
@@ -507,7 +507,7 @@ class arm_emulator
   public:
 
 	word_t val_register[16]; /*Validation Suite Coprocessor's Registers*/
-	uint64_t accumulator;   /*Xscale coprocessor0 acc0 */	
+	uint64_t accumulator;   /*Xscale coprocessor0 acc0 */
 
 
 	bool int_pending(void);

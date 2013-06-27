@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -25,7 +25,7 @@
 using namespace std;
 
 DecodeTable::decode_table(vector<DecodeEntry>& es, int id) :
-	entries(es), entropy(0.0), mask(0u), prob(0.0), 
+	entries(es), entropy(0.0), mask(0u), prob(0.0),
 	index(id), usize(0)
 {
 	cmask = n_ones(INSTBITS);
@@ -103,7 +103,7 @@ bool DecodeTable::fixEntries()
 
 					/* in this case, move the bigger one ahead and
 					 *  delete the small one */
-					
+
 					/* it's mask is smaller => it is bigger */
 					if (mask==(*it).mask) {
 						cerr << "Remove redundant pattern, between " << endl;
@@ -162,11 +162,11 @@ bool DecodeTable::fixEntries()
 			InstWord diff = (*it).signature ^ (*it1).signature;
 
 			if ((mask & diff) == 0u) {
-				   
+
 				/* redundancy must have been cleared */
 				if ((*it).label==(*it1).label) continue;
 
-			   	/* must be bigger one first after sorting*/
+				/* must be bigger one first after sorting*/
 				assert((*it).mask!=(*it1).mask);
 				assert(mask==(*it).mask);
 
@@ -184,8 +184,8 @@ bool DecodeTable::fixEntries()
 						if ((i&((*it1).signature^tmp.signature))==0u)
 							tmp.signature ^= i;
 
-						new_entries.push_back(tmp);					
-						tmp.signature ^= i;				   
+						new_entries.push_back(tmp);
+						tmp.signature ^= i;
 						tmp.mask ^= i;
 					}
 				}
@@ -200,7 +200,7 @@ bool DecodeTable::fixEntries()
 	return true;
 }
 
-bool DecodeTable::checkWellFormedness() 
+bool DecodeTable::checkWellFormedness()
 {
 	bool ret = true;
 	vector<DecodeEntry>::iterator it;
@@ -262,7 +262,7 @@ vector<DecodeTable *> DecodeTable::divide_by_pattern(InstWord msk,
 			else {
 				v1.push_back(tmp);
 			}
-			
+
 		}
 	}
 
@@ -399,7 +399,7 @@ ostream& operator << (ostream& os, DecodeTable& table)
 		<< "\tCMask=" << PADDEDHEX << table.cmask
 		<< "\tSig=" << PADDEDHEX << table.signature << endl;
 	os << "Prob=" << setprecision(9) << table.prob
-		<< "\tEntropy=" << setprecision(9) << table.entropy 
+		<< "\tEntropy=" << setprecision(9) << table.entropy
 		<< "\tHTreeHeight=" << setprecision(9) << table.hTreeHeight << endl;
 	os << "-------------------------------------------------------------------"
 		<< endl;
@@ -412,5 +412,3 @@ ostream& operator << (ostream& os, DecodeTable& table)
 		<< endl;
 	return os;
 }
-
-

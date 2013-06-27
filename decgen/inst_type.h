@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -191,11 +191,11 @@ inline InstWord operator ^ (const InstWord& x, const InstWord& y) {
 }
 
 inline InstWord operator << (const InstWord& x, unsigned int sbits) {
-	return InstWord(x.val << sbits);	
+	return InstWord(x.val << sbits);
 }
 
 inline InstWord operator >> (const InstWord &x, unsigned int sbits) {
-	return InstWord(x.val >> sbits);	
+	return InstWord(x.val >> sbits);
 }
 
 inline bool operator == (const InstWord& x, const InstWord& y) {
@@ -216,7 +216,7 @@ inline std::ostream& operator << (std::ostream& os, const InstWord& word)
 	return os;
 }
 
-#else 
+#else
 
 #include <bitset>
 

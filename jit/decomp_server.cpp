@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,6 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 #include <cstdlib>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -56,7 +57,7 @@ static ssize_t recvall(int fd, void *buf, ssize_t nbyte)
 	ssize_t nread = 0, n;
 
 	do {
-		if ((n = recv(fd, (char *)buf + nread, nbyte - nread, 0)) == 
+		if ((n = recv(fd, (char *)buf + nread, nbyte - nread, 0)) ==
 			(ssize_t)-1)
 		{
 			if (errno == EINTR)
@@ -85,14 +86,14 @@ decomp_server::~decomp_server()
 }
 
 uint32_t decomp_server::run(const char *temp_path)
-{ 
+{
 	char obj_path[128];
 
 	unsigned pblk_size = 4096;
 	byte_t *pblk = (byte_t *)malloc(pblk_size);
 	if (pblk == NULL) {
 		fprintf(stderr, "Error: Insufficient memory.\n");
-		return 0;	
+		return 0;
 	}
 
 	decomp_count = 0;
@@ -121,13 +122,13 @@ uint32_t decomp_server::run(const char *temp_path)
 
 		socklen_t addrlen = sizeof(struct sockaddr_in);
 		new_socket = accept(create_socket, (struct sockaddr*)&address,&addrlen);
-		if (new_socket>0 && verbose)									 
+		if (new_socket>0 && verbose)
 			 fprintf(stderr, "The Client %s is connected...\n",
 				inet_ntoa(address.sin_addr));
-	
+
 		int response = 1;
 		if (verbose) fprintf(stderr, "waiting for response...\n");
-	
+
 		while (response>0)
 		{
 			unsigned bsize, ind;
@@ -140,10 +141,10 @@ uint32_t decomp_server::run(const char *temp_path)
 					fprintf(stderr, "Response received...\n");
 					fprintf(stderr, "bufsize = %d\n", bsize);
 				}
-	
+
 				recvall(new_socket, &ind, sizeof(unsigned));
 				recvall(new_socket, &user, sizeof(bool));
-	
+
 				if (verbose) {
 					fprintf(stderr, "index   = %d\n", ind);
 					fprintf(stderr, "user level = %d\n", user);
@@ -175,16 +176,16 @@ uint32_t decomp_server::run(const char *temp_path)
 
 				if (verbose)
 					fprintf(stderr, "Code received...\n");
-	
+
 				if (compile_block(pblk, bsize, ind, user, temp_path)) {
-	
+
 					struct stat stat_stru;
 					stat(obj_path, &stat_stru);
 					int objsize = stat_stru.st_size; // 32bit size
 					int linking = tolink;
 					sendall(new_socket, &objsize, sizeof(int));
 					sendall(new_socket, &linking, sizeof(int));
-	
+
 					FILE* fp = fopen(obj_path, "r");
 					unsigned nread;
 					while ((nread=fread(buf, 1, 1024, fp))>0)
@@ -193,7 +194,7 @@ uint32_t decomp_server::run(const char *temp_path)
 					}
 					if (verbose)
 						fprintf(stderr, "Sent obj code, size %d...\n", objsize);
-	
+
 					fclose(fp);
 				}
 				else {
@@ -206,7 +207,7 @@ uint32_t decomp_server::run(const char *temp_path)
 			}
 			decomp_count++;
 		}
-	
+
 		close(new_socket);
 	}
 
@@ -251,7 +252,7 @@ bool decomp_server::compile_block(const byte_t *pblk,
 	char compilestring[1024];
 
 	if (tolink)
-		sprintf(compilestring, 
+		sprintf(compilestring,
 			CXX MORE_OPTION " %s/a.cpp"
 			" -Wl,-soname,libXcompiled_%u.so"
 			" -o %s/c.o"
@@ -259,7 +260,7 @@ bool decomp_server::compile_block(const byte_t *pblk,
 			temp_path, ind, temp_path, PREFIX,
 			user_level?"":"-DSIMIT_SYSTEM_LEVEL");
 	else
-		sprintf(compilestring, 
+		sprintf(compilestring,
 			CXX MORE_OPTION " %s/a.cpp"
 			" -c -o %s/c.o"
 			" -I%s/include -DSIMIT_COMPILED_ISS %s",
@@ -277,4 +278,3 @@ bool decomp_server::compile_block(const byte_t *pblk,
 	if (verbose) fprintf(stderr,"...failed!\n");
 	return false;
 }
-

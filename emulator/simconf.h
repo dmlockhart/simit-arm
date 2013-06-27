@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -22,7 +22,7 @@
 #include <cstdlib>
 #include <vector>
 
-namespace simit 
+namespace simit
 {
 
 const unsigned int MEMBANK_READABLE = 0x1;
@@ -45,7 +45,7 @@ struct preload_info_t
 		PRE_IMG,
 		PRE_ELF,
 	} type;
-	
+
 	void *path;	// either char * or vector<char> *;
 	unsigned int addr;
 };
@@ -56,7 +56,7 @@ struct reginit_info_t
 	unsigned int val;
 };
 
-class processor_info_t 
+class processor_info_t
 {
 
   public:

@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,6 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 /*
     armmmu.c - Memory Management Unit emulation.
     ARMulator extensions for the ARM7100 family.
@@ -31,6 +32,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
 #include "armmmu.h"
 #include "arm_io.h"
 
@@ -76,19 +78,19 @@ static word_t tlb_masks[] = {
 	0xFFFFF000,		/* TLB_ESMALLPAGE, have TEX attirbute, only for XScale */
 	0xFFFFFC00		/* TLB_TINYPAGE */
 };
-		
+
 static word_t tlb_va_to_pa(tlb_entry_t * tlb_e, word_t va) {
-	/*	
-	The non-optimized function should be like this code. For more 
+	/*
+	The non-optimized function should be like this code. For more
 	information see the code at the bottom of translation_walk function.
-	
+
 	return (tlb_e->phys_addr & tlb_e->mask) | (va & tlb_e->nmask);
 	*/
 
 	return tlb_e->phys_addr + va;
 }
 
-arm_mmu::arm_mmu (arm_emulator *emula) : emu(emula) 
+arm_mmu::arm_mmu (arm_emulator *emula) : emu(emula)
 {
 
 	i_tlb = new tlb<MMU_ITLB_SIZE>;
@@ -98,7 +100,7 @@ arm_mmu::arm_mmu (arm_emulator *emula) : emu(emula)
 	control = 0;
 	rs_flag = 0;
 	domain_access_control = 0;
-	
+
 	set_control(0x70);
     set_domain_access_control( 0xDEADC0DE);
 
@@ -106,14 +108,14 @@ arm_mmu::arm_mmu (arm_emulator *emula) : emu(emula)
     fault_status = 0;
     fault_address = 0;
     process_id = 0;
-	
+
 
 	fault_count = 0;
 
 	dummy_entry.mapping = TLB_SMALLPAGE;
 	dummy_entry.read_fault = NO_FAULT;
 	dummy_entry.write_fault = NO_FAULT;
-	
+
 	register_write_checker(NULL,NULL,NULL);
 
 }
@@ -128,20 +130,20 @@ void arm_mmu::reset () {
 	d_tlb->reset();
 }
 
-		
+
 /*set the value of control register*/
 void arm_mmu::set_control(word_t value) {
-	
+
 	if( (control &1) != (value & 1)) {
-		FLUSH_MMU_PAGE_TABLE(i_table);		
-		FLUSH_MMU_PAGE_TABLE(d_table);		
-	}	
-			
+		FLUSH_MMU_PAGE_TABLE(i_table);
+		FLUSH_MMU_PAGE_TABLE(d_table);
+	}
+
 	if(rs_flag !=( (value >> 7) & 6) ) {
 		rs_flag =( (value >> 7) & 6);
 		evaluate_access_all();
 	}
-			
+
 	if (MMU_Aligned) {
 		mask_array[MMU_BYTE - 1] = MMU_HASH_MASK;
 		mask_array[MMU_HALF - 1] = 0xFFFFF001;
@@ -152,7 +154,7 @@ void arm_mmu::set_control(word_t value) {
 		mask_array[MMU_HALF - 1] = MMU_HASH_MASK;
 		mask_array[MMU_WORD - 1] = MMU_HASH_MASK;
 	}
-	
+
 	control = value;
 }
 
@@ -175,27 +177,27 @@ void arm_mmu::set_process_id (word_t value)
 				 ( (d_table[i].read_tag & MMU_PID_VA_MAP_MASK) == 0 ||
 					(d_table[i].write_tag & MMU_PID_VA_MAP_MASK) == 0 ))
 				FLUSH_MMU_PAGE_ENTRY(&d_table[i]);
-				
+
 	}
 }
-	
+
 void arm_mmu::add_mmu_page_entry(mmu_page_table_entry_t *x_table,
 	tlb_entry_t *tlb_e,word_t phys_addr,word_t virt_addr)
 {
-	byte_t *ptr = emu->mem->translate(phys_addr); 
+	byte_t *ptr = emu->mem->translate(phys_addr);
 	if (ptr != NULL && tlb_e->mapping != TLB_TINYPAGE) {
 		mmu_page_table_entry_t *pte = x_table + MMU_HASH_INDEX(virt_addr);
-		
+
 		if (tlb_e->read_fault == NO_FAULT)
 			pte->read_tag = (virt_addr & MMU_HASH_MASK);
-		else 
+		else
 			pte->read_tag = 0xffffffff;
-		
+
 
 		if (x_table == d_table) {
 			if (tlb_e->write_fault == NO_FAULT)
 				pte->write_tag = (virt_addr & MMU_HASH_MASK);
-			else 
+			else
 				pte->write_tag = 0xffffffff;
 
 			if(fcheck && fcheck(wchecker, phys_addr))
@@ -203,28 +205,28 @@ void arm_mmu::add_mmu_page_entry(mmu_page_table_entry_t *x_table,
 		}
 
 		pte->phys_addr = (phys_addr & MMU_HASH_MASK) - (virt_addr & MMU_HASH_MASK);
-		pte->ptr =	ptr + (phys_addr & MMU_HASH_MASK); //get host address 
+		pte->ptr =	ptr + (phys_addr & MMU_HASH_MASK); //get host address
 		pte->ptr -= (virt_addr & MMU_HASH_MASK); //prepare to converse virtual address to host address
-		
+
 	}
 }
-		
+
 void arm_mmu::remove_mmu_page_entry(mmu_page_table_entry_t *x_table,
 	tlb_entry_t *tlb_e)
 {
 	FLUSH_MMU_PAGE_ENTRY(x_table + MMU_HASH_INDEX(tlb_e->virt_addr));
 	if (tlb_e->mapping == TLB_SECTION || tlb_e->mapping == TLB_LARGEPAGE)
-		FLUSH_MMU_PAGE_TABLE(x_table);		
+		FLUSH_MMU_PAGE_TABLE(x_table);
 	/*
 		for(int i=0; i < MMU_HASH_SIZE; i++)
 			if ( x_table[i].phys_addr != 0xFFFFFFFF)
 				if ( ( (x_table[i].read_tag & tlb_e->mask) == tlb_e->virt_addr)
-				||( (x_table[i].write_tag & tlb_e->mask) == tlb_e->virt_addr) )   
+				||( (x_table[i].write_tag & tlb_e->mask) == tlb_e->virt_addr) )
 				FLUSH_MMU_PAGE_ENTRY(x_table + i);
-	*/			
+	*/
 }
-		
-#ifdef RECORD_TLB_MISS			
+
+#ifdef RECORD_TLB_MISS
 #define D_TRANS(_a, _e) \
 	if ((_e=d_tlb->search(_a))==NULL) {\
 		_e = d_tlb->next();\
@@ -233,7 +235,7 @@ void arm_mmu::remove_mmu_page_entry(mmu_page_table_entry_t *x_table,
 	} \
 	else \
 		fault = NO_FAULT;
-		
+
 #define I_TRANS(_a, _e) \
 	if ((_e=i_tlb->search(_a))==NULL) {\
 		_e = i_tlb->next();\
@@ -251,7 +253,7 @@ void arm_mmu::remove_mmu_page_entry(mmu_page_table_entry_t *x_table,
 	} \
 	else \
 		fault = NO_FAULT;
-		
+
 #define I_TRANS(_a, _e) \
 	if ((_e=i_tlb->search(_a))==NULL) {\
 		_e = i_tlb->next(),	fault = translation_walk(_a, _e); \
@@ -267,13 +269,13 @@ mmu_fault_t arm_mmu::translate_data_addr_slow (word_t virt_addr,
 	tlb_entry_t *entry;
 
 	word_t va = mmu_pid_va_map (virt_addr);
-	
+
 	if (MMU_Disabled) {
 		*phys_addr = va;
-		
+
 		/*Cache Translation Process*/
 		add_mmu_page_entry(d_table ,&dummy_entry,*phys_addr,virt_addr);
-	
+
 		return NO_FAULT;
 	}
 
@@ -298,13 +300,13 @@ mmu_fault_t arm_mmu::translate_data_addr_slow (word_t virt_addr,
 
 	/*Convert virtual address to physical address*/
 	*phys_addr = tlb_va_to_pa (entry, va);
-	
+
 	/*Cache Translation Process*/
 	add_mmu_page_entry(d_table,entry,*phys_addr,virt_addr);
-	
+
 	return NO_FAULT;
 }
-	
+
 
 
 
@@ -330,7 +332,7 @@ mmu_fault_t arm_mmu::read_hword_slow (word_t virt_addr, hword_t *data)
     word_t pa;
 
 	fault = translate_data_addr_slow (virt_addr, MMU_READ, MMU_HALF, &pa);
-	if (fault) { 
+	if (fault) {
 		update_fsr_far (fault,virt_addr);
 		return fault;
 	}
@@ -363,7 +365,7 @@ mmu_fault_t arm_mmu::write_byte_slow	(word_t virt_addr, byte_t data)
     word_t pa;
 
 	fault = translate_data_addr_slow (virt_addr, MMU_WRITE, MMU_BYTE, &pa);
-	if (fault) { 
+	if (fault) {
 		update_fsr_far (fault,virt_addr);
 		return fault;
 	}
@@ -371,7 +373,7 @@ mmu_fault_t arm_mmu::write_byte_slow	(word_t virt_addr, byte_t data)
 	if(falarm && falarm(wchecker, pa)) {
 		return JIT_ALARM_FAULT;
 	}
-	
+
 	MEM_WRITE_BYTE(pa, data);
 	return NO_FAULT;
 
@@ -383,7 +385,7 @@ mmu_fault_t arm_mmu::write_hword_slow	(word_t virt_addr, hword_t data)
     word_t pa;
 
 	fault = translate_data_addr_slow (virt_addr, MMU_WRITE, MMU_HALF, &pa);
-	if (fault) { 
+	if (fault) {
 		update_fsr_far (fault,virt_addr);
 		return fault;
 	}
@@ -391,7 +393,7 @@ mmu_fault_t arm_mmu::write_hword_slow	(word_t virt_addr, hword_t data)
 	if(falarm && falarm(wchecker, pa)) {
 		return JIT_ALARM_FAULT;
 	}
-	
+
 	MEM_WRITE_HALF_WORD(pa, data);
 	return NO_FAULT;
 
@@ -403,7 +405,7 @@ mmu_fault_t arm_mmu::write_word_slow	(word_t virt_addr, word_t data)
     word_t pa;
 
 	fault = translate_data_addr_slow (virt_addr, MMU_WRITE, MMU_WORD, &pa);
-	if (fault) { 
+	if (fault) {
 		update_fsr_far (fault,virt_addr);
 		return fault;
 	}
@@ -411,7 +413,7 @@ mmu_fault_t arm_mmu::write_word_slow	(word_t virt_addr, word_t data)
 	if(falarm && falarm(wchecker, pa)) {
 		return JIT_ALARM_FAULT;
 	}
-	
+
 	MEM_WRITE_WORD (pa, data);
 	return NO_FAULT;
 
@@ -421,9 +423,9 @@ mmu_fault_t arm_mmu::translate_instr_addr_slow (word_t virt_addr, word_t *phys_a
 {
 	mmu_fault_t fault;
     tlb_entry_t *entry;
- 
+
 	word_t va = mmu_pid_va_map (virt_addr);
-	
+
 	if (MMU_Disabled) {
 		*phys_addr = va;
 		add_mmu_page_entry(i_table,&dummy_entry,*phys_addr,virt_addr);
@@ -472,7 +474,7 @@ word_t arm_mmu::mrc (word_t instr)
 	unsigned creg = (instr>>16)&15;
 	//unsigned opcode_2 = (instr>>5)&7;
 	//unsigned CRm = (instr>>0)&15;
-	
+
 	switch (creg) {
 		case MMU_ID:
 			data =  emu->get_cpu_id();
@@ -505,27 +507,27 @@ word_t arm_mmu::mrc (word_t instr)
 }
 
 void arm_mmu::invalidate_tlb(word_t opcode_2,word_t CRm,word_t value) {
-			
+
 	if (opcode_2 == 0 && CRm == 0x7) {
-		FLUSH_MMU_PAGE_TABLE(i_table);		
-		FLUSH_MMU_PAGE_TABLE(d_table);		
+		FLUSH_MMU_PAGE_TABLE(i_table);
+		FLUSH_MMU_PAGE_TABLE(d_table);
 		i_tlb->invalidate_all ();
 		d_tlb->invalidate_all ();
 	}
 	else if (opcode_2 == 0 && CRm == 0x5) {
-		FLUSH_MMU_PAGE_TABLE(i_table);		
+		FLUSH_MMU_PAGE_TABLE(i_table);
 		i_tlb->invalidate_all ();
 	}
 	else if (opcode_2 == 1 && CRm == 0x5) {
-		FLUSH_MMU_PAGE_TABLE(i_table);		
+		FLUSH_MMU_PAGE_TABLE(i_table);
 		i_tlb->invalidate_entry (value);
 	}
 	else if (opcode_2 == 0 && CRm == 0x6) {
-		FLUSH_MMU_PAGE_TABLE(d_table);		
+		FLUSH_MMU_PAGE_TABLE(d_table);
 		d_tlb->invalidate_all ();
 	}
 	else if (opcode_2 == 1 && CRm == 0x6) {
-		FLUSH_MMU_PAGE_TABLE(d_table);		
+		FLUSH_MMU_PAGE_TABLE(d_table);
 		d_tlb->invalidate_entry (value);
 	}
 	else {
@@ -547,9 +549,9 @@ void arm_mmu::mcr(word_t instr, word_t value)
 			break;
 		case MMU_TRANSLATION_TABLE_BASE:
 			translation_table_base = value & 0xFFFFC000;
-			FLUSH_MMU_PAGE_TABLE(i_table);		
-			FLUSH_MMU_PAGE_TABLE(d_table);		
-			
+			FLUSH_MMU_PAGE_TABLE(i_table);
+			FLUSH_MMU_PAGE_TABLE(d_table);
+
 			break;
 		case MMU_DOMAIN_ACCESS_CONTROL:
 			set_domain_access_control(value);
@@ -565,7 +567,7 @@ void arm_mmu::mcr(word_t instr, word_t value)
 			//xscale_cp15_cache_ops (state, instr, value);
 			break;
 		case MMU_TLB_OPS:
-			invalidate_tlb(opcode_2,CRm,value);		
+			invalidate_tlb(opcode_2,CRm,value);
 			break;
 
 		case MMU_SA_RB_OPS:
@@ -592,23 +594,23 @@ int arm_mmu::check_perms (int ap, mmu_access_t read) const
 {
 
 	static const byte_t perms[] = {
-	//	  !u    !u    !u    !u	
+	//	  !u    !u    !u    !u
 		0, 0, 0, 0, 0, 0, 0, 0,		//ap == 0
 		0, 0, 0, 1, 1, 1, 1, 1,		//ap == 0 read
-		0, 1, 0, 1, 0, 1, 0, 1,		//ap == 1	
+		0, 1, 0, 1, 0, 1, 0, 1,		//ap == 1
 		0, 1, 0, 1, 0, 1, 0, 1,		//ap == 1 read
-		0, 1, 0, 1, 0, 1, 0, 1,		//ap == 2 
+		0, 1, 0, 1, 0, 1, 0, 1,		//ap == 2
 		1, 1, 1, 1, 1, 1, 1, 1,		//ap == 2 read
 		1, 1, 1, 1, 1, 1, 1, 1,		//ap == 3
 		1, 1, 1, 1, 1, 1, 1, 1		//ap == 3 read
 	//				r  r  r	 r
 	//        s  s        s  s
 	};
-	
+
 			/* ap:read:rs_flag:user */
 	int	pack = ap | read | rs_flag | emu->is_privilege_mode();
 	return perms[pack];
-	
+
 }
 
 mmu_fault_t arm_mmu::check_access (word_t virt_addr, tlb_entry_t * tlb_e,
@@ -678,7 +680,7 @@ mmu_fault_t arm_mmu::translation_walk (word_t virt_addr, tlb_entry_t *tlb_e)
 	int fast_access = 1;
 	word_t L1addr, L1desc;
 	tlb_entry_t entry = *tlb_e;
-		
+
 	L1addr = translation_table_base & 0xFFFFC000;
 	L1addr = (L1addr | (virt_addr >> 18)) & ~3;
 	MEM_READ_WORD (L1addr, &L1desc);
@@ -715,18 +717,18 @@ mmu_fault_t arm_mmu::translation_walk (word_t virt_addr, tlb_entry_t *tlb_e)
 					break;
 				case 1:
 					entry.mapping = TLB_LARGEPAGE;
-					/*check every sub-page ap-bit in order to group into 
+					/*check every sub-page ap-bit in order to group into
 					one ap-bit*/
 					if(ap[3] != ap[2] || ap[2]!=ap[1] || ap[1] != ap[0] ) {
-						fast_access =0;	
+						fast_access =0;
 					}
 					break;
 				case 2:
 					entry.mapping = TLB_SMALLPAGE;
-					/*check every sub-page ap-bit in order to group into 
+					/*check every sub-page ap-bit in order to group into
 					one ap-bit*/
 					if(ap[3] != ap[2] || ap[2]!=ap[1] || ap[1] != ap[0] ) {
-						fast_access =0;	
+						fast_access =0;
 					}
 					break;
 			}
@@ -764,18 +766,18 @@ mmu_fault_t arm_mmu::translation_walk (word_t virt_addr, tlb_entry_t *tlb_e)
 					}
 				case 1:
 					entry.mapping = TLB_LARGEPAGE;
-					/*check every sub-page ap-bit in order to group into 
+					/*check every sub-page ap-bit in order to group into
 					one ap-bit*/
 					if(ap[3] != ap[2] || ap[2]!=ap[1] || ap[1] != ap[0] ) {
-						fast_access =0;	
+						fast_access =0;
 					}
 					break;
 				case 2:
 					entry.mapping = TLB_SMALLPAGE;
-					/*check every sub-page ap-bit in order to group into 
+					/*check every sub-page ap-bit in order to group into
 					one ap-bit*/
 					if(ap[3] != ap[2] || ap[2]!=ap[1] || ap[1] != ap[0] ) {
-						fast_access =0;	
+						fast_access =0;
 					}
 					break;
 				}
@@ -791,20 +793,20 @@ mmu_fault_t arm_mmu::translation_walk (word_t virt_addr, tlb_entry_t *tlb_e)
 		break;
 	}
 
-	entry.mask = tlb_masks[entry.mapping];  
-	/*	
-	Masking bits for both physical address and virtual address consumes 
-	more time. The better way is to subtract physical page-base with 
-	virtual page-base before hand and the time to convert address will 
-	be less 
-	
+	entry.mask = tlb_masks[entry.mapping];
+	/*
+	Masking bits for both physical address and virtual address consumes
+	more time. The better way is to subtract physical page-base with
+	virtual page-base before hand and the time to convert address will
+	be less
+
 	The non-optimized function should be like this code.
-	
-	entry.nmask = ~tlb_masks[entry.mapping];  
+
+	entry.nmask = ~tlb_masks[entry.mapping];
 	entry.phys_addr &= entry.mask;
 	*/
 	entry.phys_addr = (entry.phys_addr & entry.mask) -
-						(entry.virt_addr & entry.mask); 
+						(entry.virt_addr & entry.mask);
 
 	/*
 	Compute the memory access permision of this tlb entry(page entry)
@@ -818,34 +820,34 @@ mmu_fault_t arm_mmu::translation_walk (word_t virt_addr, tlb_entry_t *tlb_e)
 }
 
 void arm_mmu::evaluate_access_all(void)
-{ 
-	
+{
+
 	int fast_access;
 	tlb_entry_t *tlb_e;
-	
-	
-	FLUSH_MMU_PAGE_TABLE(i_table);		
-	FLUSH_MMU_PAGE_TABLE(d_table);		
-			
+
+
+	FLUSH_MMU_PAGE_TABLE(i_table);
+	FLUSH_MMU_PAGE_TABLE(d_table);
+
 	/*Compute the memory access permision of all entries in ITLB*/
 	for(int i=0;i< MMU_ITLB_SIZE;i++) {
 		tlb_e =i_tlb->get_entry(i);
 		fast_access =1;
-	
+
 		if (tlb_e->mapping == TLB_INVALID) continue;
 		else if (tlb_e->read_fault == SLOW_ACCESS_CHECKING) fast_access = 0;
-		
+
 		evaluate_access_entry(fast_access,tlb_e);
 	}
-	
+
 	/*Compute the memory access permision of all entries in ITLB*/
 	for(int i=0;i< MMU_DTLB_SIZE ;i++) {
 		tlb_e =d_tlb->get_entry(i);
 		fast_access =1;
-	
+
 		if (tlb_e->mapping == TLB_INVALID) continue;
 		else if (tlb_e->read_fault == SLOW_ACCESS_CHECKING) fast_access = 0;
-		
+
 		evaluate_access_entry(fast_access,tlb_e);
 	}
 }
@@ -856,7 +858,7 @@ void arm_mmu::evaluate_access_entry (int fast_access,tlb_entry_t *tlb_e)
 	if (tlb_e->mapping == TLB_INVALID) return;
 
 	if (fast_access) {
-	/*fast access checking means that this page has one ap-bit 
+	/*fast access checking means that this page has one ap-bit
 	  or same ap-bit for each sub-page*/
 		tlb_e->read_fault = check_access(0,tlb_e,MMU_READ);
 		tlb_e->write_fault = check_access(0,tlb_e,MMU_WRITE);
@@ -866,7 +868,7 @@ void arm_mmu::evaluate_access_entry (int fast_access,tlb_entry_t *tlb_e)
 	  ap-bit for each sub-page*/
 		tlb_e->read_fault = SLOW_ACCESS_CHECKING;
 		tlb_e->write_fault = SLOW_ACCESS_CHECKING;
-				
+
 	}
 }
 
@@ -878,7 +880,7 @@ word_t arm_mmu::xscale_mrc (word_t instr)
 	unsigned creg = (instr>>16)&15;
 	unsigned opcode_2 = (instr>>5)&7;
 	//unsigned CRm = (instr>>0)&15;
-	
+
 	switch (creg) {
 		case MMU_ID:
 			data = (opcode_2 ? cache_type : emu->get_cpu_id());
@@ -926,9 +928,9 @@ void arm_mmu::xscale_mcr(word_t instr, word_t value)
 			break;
 		case MMU_TRANSLATION_TABLE_BASE:
 			translation_table_base = value & 0xFFFFC000;
-			FLUSH_MMU_PAGE_TABLE(i_table);		
-			FLUSH_MMU_PAGE_TABLE(d_table);		
-			
+			FLUSH_MMU_PAGE_TABLE(i_table);
+			FLUSH_MMU_PAGE_TABLE(d_table);
+
 			break;
 		case MMU_DOMAIN_ACCESS_CONTROL:
 			set_domain_access_control(value);
@@ -944,7 +946,7 @@ void arm_mmu::xscale_mcr(word_t instr, word_t value)
 			//xscale_cp15_cache_ops (state, instr, value);
 			break;
 		case MMU_TLB_OPS:
-			invalidate_tlb(opcode_2,CRm,value);		
+			invalidate_tlb(opcode_2,CRm,value);
 			break;
 
 		case MMU_PID:

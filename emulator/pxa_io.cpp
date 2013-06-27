@@ -183,7 +183,7 @@ pxa_io::~pxa_io ()
 
 void pxa_io::do_cycle ()
 {
-	/*RTC*/ 
+	/*RTC*/
 	if (++rt_scale >= RT_SCALE) {
 		rt_scale = 0;
 		if (rt_count++ == (rttr & 0xffff)) {
@@ -243,7 +243,7 @@ void pxa_io::do_cycle ()
 			tv.tv_sec = 0;
 			tv.tv_usec = 0;
 			if (select (1, &rset, NULL, NULL, &tv) == 1) {
-				
+
 				unsigned char c;
 				read (0, &c, 1);
 
@@ -279,7 +279,7 @@ memory_fault_t pxa_io::read_word(target_addr_t addr, word_t *p)
 	word_t data = 0;
 
 	switch (addr) {
-	 /*RTC*/ 
+	 /*RTC*/
 	case RCNR:
 		data = rcnr;
 		break;
@@ -335,9 +335,9 @@ memory_fault_t pxa_io::read_word(target_addr_t addr, word_t *p)
 		data = iclr;
 		break;
 	/* ffuart control */
-	case FFRBR:		
+	case FFRBR:
 		{
-			
+
 			data = ffrbr & 0xff;
 			icpr &= ~FFUART_IRQ;
 			icip &= ~FFUART_IRQ;
@@ -358,11 +358,11 @@ memory_fault_t pxa_io::read_word(target_addr_t addr, word_t *p)
 	case FFLCR:
 		data = fflcr;
 		break;
-	case FFLSR:		//read only 
+	case FFLSR:		//read only
 		fflsr |= 0x60;
 		data = fflsr & 0xff;
 		break;
-		// core clock 
+		// core clock
 	case CCCR:
 		data = cccr;
 		break;
@@ -375,7 +375,7 @@ memory_fault_t pxa_io::read_word(target_addr_t addr, word_t *p)
 
 	default:
 		data = 0;
-		break;	
+		break;
 	};
 
 	*p = data;
@@ -386,7 +386,7 @@ memory_fault_t pxa_io::write_word(target_addr_t addr, word_t data)
 {
 
 	switch (addr) {
-	 /*RTC*/ 
+	 /*RTC*/
 	case RCNR:
 		rcnr = data;
 		break;
@@ -451,7 +451,7 @@ memory_fault_t pxa_io::write_word(target_addr_t addr, word_t data)
 		{
 			unsigned char c = data;
 			write (1, &c, 1);
-			
+
 			ffiir &= ~0x2;
 			ffiir |= 0x1;
 			fflsr &= ~0x60;
@@ -467,7 +467,7 @@ memory_fault_t pxa_io::write_word(target_addr_t addr, word_t data)
 		fflcr = data & 0xff;
 		break;
 
-	//core clock 
+	//core clock
 	case CCCR:
 		cccr = data & 0x3ff;
 		break;
@@ -483,4 +483,3 @@ memory_fault_t pxa_io::write_word(target_addr_t addr, word_t data)
 	};
 	return MEM_NO_FAULT;
 }
-

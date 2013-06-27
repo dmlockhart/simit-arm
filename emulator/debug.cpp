@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,22 +12,23 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 /***************************************************************************
-						  debug.c  -  description
-							 -------------------
-	begin				: Wed Sep 26 2001
-	copyright			: (C) 2001 CEA and Université Paris XI Orsay
-	author			   : Gilles Mouchard
-	email				: gilles.mouchard@lri.fr, gilles.mouchard@cea.fr
+                          debug.c  -  description
+                             -------------------
+    begin                : Wed Sep 26 2001
+    copyright            : (C) 2001 CEA and UniversitÃ© Paris XI Orsay
+    author               : Gilles Mouchard
+    email                : gilles.mouchard@lri.fr, gilles.mouchard@cea.fr
  ***************************************************************************/
 
 /***************************************************************************
- *																		 *
+ *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or	 *
- *   (at your option) any later version.								   *
- *																		 *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
  ***************************************************************************/
 
 #include <cstdio>
@@ -49,7 +50,7 @@ void arm_emulator::debug_disasm(FILE *stream, arm_addr_t addr)
 	int i;
 	arm_inst_t inst;
 	char disasm[256];
-	
+
 	for(i = 0; i < 10; i++, addr += 4)
 	{
 		inst = user_level?fetch_inst_user(addr):fetch_inst_system(addr);
@@ -62,7 +63,7 @@ void arm_emulator::debug_dump(FILE *stream, arm_addr_t addr)
 {
 	byte_t b;
 	int i, j;
-	
+
 	fprintf(stream,
 		"  address    0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
 	for(i = 0; i < 16; i++)
@@ -85,11 +86,11 @@ void arm_emulator::debug_go_to(arm_addr_t addr)
 {
 	arm_inst_t inst;
 	char disasm[256];
-	
+
 	status = ST_DEBUGGING;
 	pcount = prescale;
 
-	if (user_level) 
+	if (user_level)
 	{
 		while(status==ST_DEBUGGING && get_pc() != addr)
 			step_user();
@@ -106,7 +107,7 @@ void arm_emulator::debug_go_to(arm_addr_t addr)
 		term_exit();
 	}
 
-	if (is_done()) 
+	if (is_done())
 		printf("Program exited with code %d.\n", retcode);
 	else
 	{
@@ -131,7 +132,7 @@ void arm_emulator::debug_trace(int count)
 		}
 		inst = fetch_inst_user(get_pc());
 	}
-	else 
+	else
 	{
 		term_init();
 		while(status==ST_DEBUGGING && count > 0)
@@ -142,7 +143,7 @@ void arm_emulator::debug_trace(int count)
 		inst = fetch_inst_system(get_pc());
 		term_exit();
 	}
-	
+
 	arm_disassemble(inst, get_pc(), disasm);
 	printf("0x%08x : 0x%08x    %s", get_pc(), inst, disasm);
 }
@@ -151,7 +152,7 @@ void arm_emulator::debug_dump_registers(FILE *stream)
 {
 	int i, j, n;
 	char s[256];
-	
+
 	for(n = 0, i = 0; i < 4;  i++)
 	{
 		for(j = 0; j < 4; j++, n++)
@@ -207,22 +208,22 @@ void arm_emulator::debug()
 	char line[256];
 	char last_line[256];
 	char parm[8][32];
-	
-	
+
+
 	strcpy(last_line, "");
 	strcpy(line, "");
-	
+
 	do
-	{	
-	 	if (strcmp(line, "") == 0)
-	 	{
-	 		strcpy(line, last_line);
-	 	}
-		
+	{
+		if (strcmp(line, "") == 0)
+		{
+			strcpy(line, last_line);
+		}
+
 		nparms = sscanf(line, "%s %s %s %s %s %s %s %s",
 			parm[0], parm[1], parm[2], parm[3], parm[4], parm[5],
 			parm[6], parm[7]);
-		
+
 		switch(nparms)
 		{
 			case 1:
@@ -297,7 +298,7 @@ void arm_emulator::debug()
 						printf("Unknown debugging command!\n");
 				}
 				break;
-				
+
 			case 2:
 				/* maybe the second parm is a register */
 				int id = arm_decode_regname(parm[1]);
@@ -305,7 +306,7 @@ void arm_emulator::debug()
 				if (id >= 0)
 					parm_addr = read_gpr(id==PC_AHEAD_IND?PC_REAL_IND:id);
 
-				if (strcmp(parm[0], "u") == 0 && 
+				if (strcmp(parm[0], "u") == 0 &&
 					(id >=0 || get_addr(parm[1], &parm_addr)))
 				{
 					debug_disasm(stdout, parm_addr);
@@ -356,9 +357,9 @@ void arm_emulator::debug()
 				}
 				break;
 		}
-	
+
 		strcpy(last_line, line);
-		
+
 		printf("> ");
 
 	} while (my_gets(line, sizeof(line)));

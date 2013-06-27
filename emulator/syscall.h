@@ -25,7 +25,7 @@ namespace simulator {
   class arm_simulator;
 }
 typedef simulator::arm_simulator armulator;
-#else 
+#else
 namespace simit {
   class arm_emulator;
 }

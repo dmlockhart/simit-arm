@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,6 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 %{
 
 
@@ -35,10 +36,10 @@ extern int isa_parse();
 const char *isa_filename;
 isa_FlexLexer *isa_lexer;
 
-static void isa_lexerror(char c) 
+static void isa_lexerror(char c)
 {
-	fprintf(stderr, "Unknown character %c at line %d\n",
-		c, isa_lexer->lineno());
+    fprintf(stderr, "Unknown character %c at line %d\n",
+        c, isa_lexer->lineno());
 }
 
 
@@ -53,7 +54,7 @@ DECNUM  [0-9]+
 
 EXP     [Ee][+-]?{DIG}+
 
-STR		\"(\\.|[^\\"])*\"
+STR     \"(\\.|[^\\"])*\"
 
 WHITES  [ \t]*
 IDENT   [a-zA-Z_][a-zA-Z_0-9]*
@@ -65,78 +66,78 @@ IDENT   [a-zA-Z_][a-zA-Z_0-9]*
 
 %%
 
-{STR}		{
-			isa_lval.strval = strdup(YYText()+1);
-			isa_lval.strval[YYLeng()-2]=0;
-			return TK_STR;
-			}
+{STR}       {
+            isa_lval.strval = strdup(YYText()+1);
+            isa_lval.strval[YYLeng()-2]=0;
+            return TK_STR;
+            }
 
-"group"		return TK_GRP;
-"op"		BEGIN(opdec); return TK_OP;
+"group"     return TK_GRP;
+"op"        BEGIN(opdec); return TK_OP;
 
-<opdec>{IDENT}	{
-			isa_lval.sym_t = symbol_find_or_insert(YYText());
-			return TK_IDENT;
-			}
+<opdec>{IDENT}  {
+            isa_lval.sym_t = symbol_find_or_insert(YYText());
+            return TK_IDENT;
+            }
 
-<opdec>":"	return ':';
-<opdec>"("	return '(';
-<opdec>")"	BEGIN(INITIAL); return ')';
+<opdec>":"  return ':';
+<opdec>"("  return '(';
+<opdec>")"  BEGIN(INITIAL); return ')';
 <opdec>{BINPAT} {
-			isa_lval.strval = strdup(YYText());
-			return TK_PAT;
-			}
-<opdec>{WHITES}	
-<opdec>"\n"+		
+            isa_lval.strval = strdup(YYText());
+            return TK_PAT;
+            }
+<opdec>{WHITES}
+<opdec>"\n"+
 
-"var"		return TK_VAR;
-"field"		return TK_FIELD;
+"var"       return TK_VAR;
+"field"     return TK_FIELD;
 
-{IDENT}		isa_lval.sym_t = symbol_find_or_insert(YYText()); return TK_IDENT;
+{IDENT}     isa_lval.sym_t = symbol_find_or_insert(YYText()); return TK_IDENT;
 {DECNUM}    isa_lval.uint = atoi(YYText()); return TK_NUM;
 
-"//"			BEGIN(comment);
-<comment>"\n"	BEGIN(INITIAL);
-<comment>.		/*ignore*/
+"//"            BEGIN(comment);
+<comment>"\n"   BEGIN(INITIAL);
+<comment>.      /*ignore*/
 
-"/*"			BEGIN(mcomment);
-<mcomment>"*/"	BEGIN(INITIAL);
-<mcomment>.		/*ignore*/
+"/*"            BEGIN(mcomment);
+<mcomment>"*/"  BEGIN(INITIAL);
+<mcomment>.     /*ignore*/
 
-"{"		return '{';
-"}"		return '}';
-":"		return ':';
-"="		return '=';
-";"		return ';';
+"{"     return '{';
+"}"     return '}';
+":"     return ':';
+"="     return '=';
+";"     return ';';
 
-{WHITES}	
-"\n"+		
-<<EOF>>		return 0;
+{WHITES}
+"\n"+
+<<EOF>>     return 0;
 
-.			{
-			 isa_lexerror(*YYText());
-			}
+.           {
+             isa_lexerror(*YYText());
+            }
 
 %%
 
 void isa_error (const char *s)
 {
-	fprintf(stderr, "%s near line %d\n", s, isa_lexer->lineno());
-	exit(1);
+    fprintf(stderr, "%s near line %d\n", s, isa_lexer->lineno());
+    exit(1);
 }
 
 int isa_lex()
 {
-    return isa_lexer->yylex();                                    
+    return isa_lexer->yylex();
 }
 
 isa_prog *isa_parse_wrapper(ifstream *infile, const char *fname)
 {
-	isa_filename = fname;
-	isa_lexer = new isa_FlexLexer(infile);
+    isa_filename = fname;
+    isa_lexer = new isa_FlexLexer(infile);
 
-	isa_parse();
+    isa_parse();
 
-	delete isa_lexer;
-	return isa_parser_result;
+    delete isa_lexer;
+    return isa_parser_result;
 }

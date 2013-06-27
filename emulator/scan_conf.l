@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,6 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 %{
 
 #include <cstring>
@@ -128,7 +129,7 @@ static vector<char> *lex_str(char *val, unsigned int len)
 				case '?' : tmp = '\?'; break;
 				case '\'': tmp = '\''; break;
 				case '\"': tmp = '\"'; break;
-				case 'x': 
+				case 'x':
 				{
 					if (pos + 2 >= len ||
 						!isxdigit(val[pos + 1]) || !isxdigit(val[pos + 2]))

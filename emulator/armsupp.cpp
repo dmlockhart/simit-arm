@@ -42,48 +42,48 @@ void arm_emulator::raise_exception(ex_vector_t vector)
 
 	switch (vector) {
 	case ResetV:	/* RESET */
-     	bank = mode_to_bank(SVC_MODE);
+	bank = mode_to_bank(SVC_MODE);
 		write_spsr (read_cpsr());
 		write_cpsr (((read_cpsr() & ~(mode | (1<<5))) | (3<<6) | SVC_MODE));
-      	write_gpr2(LRIND, 0);
+	write_gpr2(LRIND, 0);
 		status=ST_EXIT;
 		break;
 	case UndefinedInstrV:	/* Undefined Instruction */
-     	bank = mode_to_bank(UND_MODE);
+	bank = mode_to_bank(UND_MODE);
 		write_spsr (read_cpsr());
-		write_cpsr (((read_cpsr() & ~(mode | (1<<5))) | (1<<7) | UND_MODE));	
-      	write_gpr2(LRIND, temp + isize);
+		write_cpsr (((read_cpsr() & ~(mode | (1<<5))) | (1<<7) | UND_MODE));
+	write_gpr2(LRIND, temp + isize);
 		break;
 	case SWIV:	/* Software Interrupt */
-     	bank = mode_to_bank(SVC_MODE);
+	bank = mode_to_bank(SVC_MODE);
 		write_spsr (read_cpsr());
 		write_cpsr (((read_cpsr() & ~(mode | (1<<5))) | (1<<7) | SVC_MODE));
-      	write_gpr2(LRIND, temp + isize);
+	write_gpr2(LRIND, temp + isize);
 		break;
 	case PrefetchAbortV:	/* Prefetch Abort */
-     	abort_addr = 1;
+	abort_addr = 1;
 		bank = mode_to_bank(ABT_MODE);
 		write_spsr (read_cpsr());
 		write_cpsr (((read_cpsr() & ~(mode | (1<<5))) | (1<<7) | ABT_MODE));
-      	write_gpr2( 14, temp + isize);
+	write_gpr2( 14, temp + isize);
 		break;
 	case DataAbortV:	/* Data Abort */
-     	bank = mode_to_bank(ABT_MODE);
+	bank = mode_to_bank(ABT_MODE);
 		write_spsr (read_cpsr());
 		write_cpsr (((read_cpsr() & ~(mode | (1<<5))) | (1<<7) | ABT_MODE));
-      	write_gpr2(LRIND, temp + e2size);
+	write_gpr2(LRIND, temp + e2size);
 		break;
 	case IRQV:	/* IRQ */
 		bank = mode_to_bank(IRQ_MODE);
 		write_spsr (read_cpsr());
 		write_cpsr (((read_cpsr() & ~(mode | (1<<5))) | (1<<7) | IRQ_MODE));
-      	write_gpr2(LRIND, temp + esize);
+	write_gpr2(LRIND, temp + esize);
 		break;
 	case FIQV:	/* FIQ */
-     	bank = mode_to_bank(FIQ_MODE);
+	bank = mode_to_bank(FIQ_MODE);
 		write_spsr (read_cpsr());
 		write_cpsr (((read_cpsr() & ~(mode | (1<<5))) | (3<<6) | FIQ_MODE));
-      	write_gpr2(LRIND, temp + esize);
+	write_gpr2(LRIND, temp + esize);
 		break;
 	case AddrExceptnV:	/* Address Exception, 26-bit only */
 		assert(0);	// should never happen
@@ -182,4 +182,3 @@ bool arm_emulator::int_pending (void)
 
 	return false;
 }
-

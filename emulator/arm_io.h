@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -17,7 +17,7 @@
 
 #include "armemul.h"
 
-namespace simit{ 
+namespace simit{
 
 
 class arm_io : public memory_ext_interface
@@ -30,7 +30,7 @@ class arm_io : public memory_ext_interface
 		virtual void do_cycle() = 0;
 
 		/* disable unused interface functions */
-		memory_fault_t read_byte(target_addr_t addr, byte_t *p) 
+		memory_fault_t read_byte(target_addr_t addr, byte_t *p)
 		{
 			return MEM_NO_FAULT;
 		}
@@ -39,7 +39,7 @@ class arm_io : public memory_ext_interface
 		{
 			return MEM_NO_FAULT;
 		}
-                                                              
+
 		memory_fault_t read_hword(target_addr_t addr, hword_t *p)
 		{
 			return MEM_NO_FAULT;

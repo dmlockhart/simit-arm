@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -29,11 +29,11 @@ namespace simit {
    to supply interface-functions for an address range. This is useful
    to remap memory addresses to I/O.
 
-   Limitations: 
+   Limitations:
    1. Permission and I/O remapping are only controllable at the
    page level. One can reduce the size of the page to get finer control,
    but the size of the page table will grow. By default, a page is 64KB.
-   The page table has 64K entries. 
+   The page table has 64K entries.
    2. Remapped pages do not accept block operations.
 */
 
@@ -87,7 +87,7 @@ const unsigned int MEMORY_PAGE_EXECUTABLE = 64; // not really used
 /* these are memory paging parameter, default page size = 64KB */
 const unsigned int MEMORY_PAGE_SIZE_BITS  = 16;
 const unsigned int MEMORY_PAGE_SIZE       = 1 << MEMORY_PAGE_SIZE_BITS;
-const unsigned int MEMORY_PAGE_TABLE_BITS = 
+const unsigned int MEMORY_PAGE_TABLE_BITS =
 	sizeof(target_addr_t) * 8 - MEMORY_PAGE_SIZE_BITS;
 const unsigned int MEMORY_PAGE_TABLE_SIZE = 1 << MEMORY_PAGE_TABLE_BITS;
 
@@ -118,7 +118,7 @@ class memory_ext_interface {
 	/* Didn't use overloading in interface to avoid bugs */
 	virtual memory_fault_t read_byte(target_addr_t addr, byte_t *pval)  = 0;
 	virtual memory_fault_t write_byte(target_addr_t addr, byte_t value) = 0;
-	
+
 	virtual memory_fault_t read_hword(target_addr_t addr, hword_t *pval)  = 0;
 	virtual	memory_fault_t write_hword(target_addr_t addr, hword_t value) = 0;
 
@@ -127,14 +127,14 @@ class memory_ext_interface {
 
 	virtual	memory_fault_t read_dword(target_addr_t addr, dword_t *pval)  = 0;
 	virtual	memory_fault_t write_dword(target_addr_t addr, dword_t value) = 0;
-	
+
 };
 
 
 class memory
 {
 	public:
-		/* constructor, 
+		/* constructor,
 		   def_perm - sets the default permission of all pages.
 		   sig      - raise signal on fault, -1 means do nothing
 		 */
@@ -277,7 +277,7 @@ class memory
 		} memory_page_table_entry_t;
 
 		// get the permission bits of a page
-		unsigned int get_page_permission(target_addr_t addr) const; 
+		unsigned int get_page_permission(target_addr_t addr) const;
 		void set_page_permission(target_addr_t addr, unsigned int perm);
 
 		// mark a page as available or unavailable
@@ -325,26 +325,26 @@ class memory
 		}
 
 		/* storage allocated for a normal page */
-		bool page_allocated(const memory_page_table_entry_t *pte) const 
+		bool page_allocated(const memory_page_table_entry_t *pte) const
 		{
 			return ((pte->flag & MEMORY_PAGE_SLOW)==0);
 		}
 
 		/* storage allocated for a normal page */
-		bool page_allocated(target_addr_t addr) const 
+		bool page_allocated(target_addr_t addr) const
 		{
 			target_addr_t page_index = addr >> MEMORY_PAGE_SIZE_BITS;
 			return ((page_table[page_index].flag & MEMORY_PAGE_SLOW)==0);
 		}
 
 		/* page remapped */
-		bool page_remapped(const memory_page_table_entry_t *pte) const 
+		bool page_remapped(const memory_page_table_entry_t *pte) const
 		{
 			return (pte->flag & MEMORY_PAGE_REMAPPED);
 		}
 
 		/* page remapped */
-		bool page_remapped(target_addr_t addr) const 
+		bool page_remapped(target_addr_t addr) const
 		{
 			target_addr_t page_index = addr >> MEMORY_PAGE_SIZE_BITS;
 			return (page_table[page_index].flag & MEMORY_PAGE_REMAPPED);
@@ -494,7 +494,7 @@ class memory
 			if (page_allocated(pte)) return pte->ptr;
 
 			/* normal page without space */
-			if (pte->flag & MEMORY_PAGE_EMPTY) 
+			if (pte->flag & MEMORY_PAGE_EMPTY)
 			{
 				if ((fault = allocate_page(pte)) != MEM_NO_FAULT)
 					report_fault(fault, addr);
@@ -513,7 +513,7 @@ class memory
 		memory_page_table_entry_t page_table[MEMORY_PAGE_TABLE_SIZE];
 
 		/* stats information */
-		unsigned int page_count;	
+		unsigned int page_count;
 
 		/* signal on fault */
 		int fault_sig;

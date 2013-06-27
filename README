@@ -1,7 +1,7 @@
 
 SimIt-ARM 3.0 currently contains a functional simulator for the
 ARM v5 architecture. It supports both user-level simulation and
-system-level simulation. 
+system-level simulation.
 
 To install, untar the source by
 
@@ -35,4 +35,4 @@ The above program will boot the "vmlinux" image, a Linux 2.4.19 kernel
 configured for the SA1100 processor. The configuration file "sa1100.cfg"
 specifies some architecture information of the system to simulate.
 The file and the related binary images can be downloaded from Simit-ARM
-website. 
+website.

@@ -3,12 +3,12 @@
 
 #include "arm_io.h"
 
-namespace simit{ 
+namespace simit{
 
 class pxa_io : public arm_io
 {
 	public:
-	
+
 		pxa_io(arm_emulator *emu);
 		~pxa_io();
 
@@ -17,7 +17,7 @@ class pxa_io : public arm_io
 
 		memory_fault_t read_word(target_addr_t addr, word_t *p);
 		memory_fault_t write_word(target_addr_t addr, word_t v);
-	
+
 	private:
 		/*interrupt controller */
 		word_t icpr;

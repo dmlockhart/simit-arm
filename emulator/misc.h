@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -31,7 +31,7 @@
 #define WORDS_BIGENDIAN 0
 #endif
 
-#if WORDS_BIGENDIAN==TARGET_LITTLE_ENDIAN 
+#if WORDS_BIGENDIAN==TARGET_LITTLE_ENDIAN
 
 #define DIRECT_READ_WORD(_p,_v)\
 	do{\
@@ -52,7 +52,7 @@
 #define DIRECT_WRITE_WORD(_p,_v)\
 		*reinterpret_cast<word_t*>(_p) = (_v >> 24) | \
 			((_v >> 8) & 0xFF00) | ((_v & 0xFF00) << 8) | (_v << 24)
- 
+
 #define DIRECT_WRITE_HALF_WORD(_p,_v)\
 		*reinterpret_cast<hword_t*>(_p) = (_v << 8) | (_v >> 8)
 
@@ -101,7 +101,7 @@ typedef arm_inst_t target_inst_t;
 
 
 /***************************************************************************\
-                          Bit manipulation macros 
+                          Bit manipulation macros
 \***************************************************************************/
 
 #define BIT0(a)     ((a)&1)

@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -78,7 +78,7 @@ string bin_ident::get_opcode(unsigned index) const
 
 	if (type==BIN_FIELD) return std::string(width, '-');
 	return oper->get_opcode(index);
-		
+
 }
 
 string bin_ident::get_qualified_name(unsigned index) const
@@ -97,7 +97,7 @@ void bin_ident::get_used_vars(unsigned index, VAR_ENV *vtab) const
 		oper->get_used_vars(index, vtab);
 }
 
-bin_literal::bin_literal(const char *str) 
+bin_literal::bin_literal(const char *str)
 {
 	unsigned ii, len;
 	len = strlen(str);
@@ -115,7 +115,7 @@ bin_literal::bin_literal(const char *str)
 
 bool oper::type_check(const FIELD_ENV *fenv, const VAR_ENV *venv, OP_ENV *oenv)
 {
-	if (checked) 
+	if (checked)
 		return true;
 
 	if (incheck) {
@@ -139,7 +139,7 @@ bool oper::type_check(const FIELD_ENV *fenv, const VAR_ENV *venv, OP_ENV *oenv)
 
 		/* if this is not literal, enter into table */
 		if ((*rbit)->is_identifier())
-			field_table[(*rbit)->get_name()] = 
+			field_table[(*rbit)->get_name()] =
 				dynamic_cast<class bin_ident *>(*rbit);
 
 		offset += (*rbit)->get_width();
@@ -223,7 +223,7 @@ bool oper::check_content(Symbol nam, const VAR_ENV *venv, OP_ENV *oenv)
 	}
 
 	int  left = 0, right = 0;	//index for scanning
-	bool in_escape = false;		//escape mode starts with '\' 
+	bool in_escape = false;		//escape mode starts with '\'
 	bool in_field = false;		//field is surrounded by '$'
 
 	vector<class token> *tokens = new vector<class token>;
@@ -262,7 +262,7 @@ bool oper::check_content(Symbol nam, const VAR_ENV *venv, OP_ENV *oenv)
 
 	if (in_field) {
 		fprintf(stderr, "Unterminated field reference in oper %s\n",
-			symbol_get_string(name).c_str());	
+			symbol_get_string(name).c_str());
 		delete tokens;
 		return false;
 	}
@@ -280,7 +280,7 @@ bool oper::check_content(Symbol nam, const VAR_ENV *venv, OP_ENV *oenv)
 			if (field_table.find(fname)==field_table.end()) {
 				fprintf(stderr, "Undefined field %s in oper %s\n",
 					(*tit).get_data(),
-					symbol_get_string(name).c_str());	
+					symbol_get_string(name).c_str());
 				delete tokens;
 				return false;
 			}
@@ -300,7 +300,7 @@ oper::~oper()
 		free((*ait).second);
 	}
 	delete contents;
-	
+
 	vector<class bin_code *>::iterator bit;
 	for (bit=pat->begin(); bit!=pat->end(); bit++) {
 		delete *bit;
@@ -344,7 +344,7 @@ string oper::get_qualified_name(unsigned index) const
 			index = index/bident->get_count();
 		}
 	}
-	return ret;	
+	return ret;
 }
 
 void oper::get_used_vars(unsigned index, VAR_ENV *vtab) const
@@ -401,7 +401,7 @@ bool group::type_check(const FIELD_ENV *fenv, const VAR_ENV *venv, OP_ENV *oenv)
 			if ((*op_it)->get_width()!=width) {
 				fprintf(stderr, "%d %d Width mismatch for %s in group %s.\n",
 					(*op_it)->get_width(), width,
-					symbol_get_string((*op_it)->get_name()).c_str(), 
+					symbol_get_string((*op_it)->get_name()).c_str(),
 					symbol_get_string(name).c_str());
 				return false;
 			}
@@ -513,7 +513,7 @@ bool isa_prog::type_check()
 	return true;
 }
 
-isa_prog::~isa_prog() 
+isa_prog::~isa_prog()
 {
 	delete fenv;
 	delete venv;
@@ -530,7 +530,7 @@ static unsigned get_sign(string& code)
 {
 	unsigned ind, val;
 	for (ind=0,val=0; ind<code.length(); ind++) {
-		val = val<<1;	
+		val = val<<1;
 		if (code[ind]=='1') val = val|1;
 	}
 	return val;
@@ -540,7 +540,7 @@ static unsigned get_mask(string& code)
 {
 	unsigned ind, val;
 	for (ind=0,val=0; ind<code.length(); ind++) {
-		val = val<<1;	
+		val = val<<1;
 		if (code[ind]!='-') val = val|1;
 	}
 	return val;
@@ -974,7 +974,7 @@ void oper::emit_codegenerator(unsigned index, ofstream& ofile)
 //	ofile << "\tbuf += sprintf(buf,\"fprintf(stderr,\\\"%xX \\\\n\\\");\\n\",curpc);\n";
 //	ofile << "\tbuf += sprintf(buf,\"CHECK_RETURN;\\n\");\n";
 //	ofile << "\tbuf += sprintf(buf,\"IO_DO_CYCLE;\\n\");\n";
-		
+
 	// emit all the vars used
 	VAR_ENV vtable;
 	get_used_vars(index, &vtable);
@@ -1050,7 +1050,7 @@ void oper::emit_codegenerator(unsigned index, ofstream& ofile)
 		ofile << "\tbuf += sprintf(buf, \"\\t}\\n\");\n";
 	}
 
-	
+
 	ofile << "\treturn buf;\n";
 
 
@@ -1069,7 +1069,7 @@ void isa_prog::emit_interpreter_dec(ofstream& ofile)
 
 void isa_prog::emit_interpreter(ofstream& ofile)
 {
-	ofile << 
+	ofile <<
 "#include \"arch.hpp\"\n";
 
 	unsigned count = grp_root->get_count();
@@ -1083,7 +1083,7 @@ void isa_prog::emit_interpreter(ofstream& ofile)
 
 void isa_prog::emit_codegenerator(ofstream& ofile)
 {
-	ofile << 
+	ofile <<
 "#include \"arch_gen.hpp\"\n";
 
 	unsigned count = grp_root->get_count();

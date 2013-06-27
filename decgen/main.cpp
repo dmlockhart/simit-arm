@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -41,12 +41,12 @@ void usage(char *cname)
 		<< "Options:" << endl
 		<< "  --help, -h     Display this information" << endl
 		<< "  -v             Display version information" << endl
-		<< "  -o <file>      Place the output C code into <file>" << endl	
+		<< "  -o <file>      Place the output C code into <file>" << endl
 		<< "  -x <file>      Generate xml output into <file>" << endl
 		<< "  -g <value>     Set gamma as <value>, default is 0.5" << endl
 		<< "  -1bit          Use only 1 bit decoding" << endl
 		<< "  -theiling      Use the Theiling algorithm" << endl
-		<< "  -i             Compute undefined opcode space" << endl	
+		<< "  -i             Compute undefined opcode space" << endl
 		<< endl;
 	exit(1);
 }
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	/* open input file
 	 * I have to use old C stuff since flex is not quite up-to-date
 	 * with ISO C++. Newer flex exists, but not widely deployed.
-	 */ 
+	 */
 	ifname = argv[i];
 	dec_in = fopen(ifname, "rt");
 	if (dec_in==NULL) {

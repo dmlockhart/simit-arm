@@ -1,19 +1,19 @@
 /***************************************************************************
-						  syscall.c  -  description
-							 -------------------
-	begin				: Wed Sep 26 2001
-	copyright			: (C) 2001 CEA and Université Paris XI Orsay
-	author			   : Gilles Mouchard
-	email				: gilles.mouchard@lri.fr, gilles.mouchard@cea.fr
+                          syscall.c  -  description
+                             -------------------
+    begin                : Wed Sep 26 2001
+    copyright            : (C) 2001 CEA and Université Paris XI Orsay
+    author               : Gilles Mouchard
+    email                : gilles.mouchard@lri.fr, gilles.mouchard@cea.fr
  ***************************************************************************/
 
 /***************************************************************************
- *																		 *
+ *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or	 *
- *   (at your option) any later version.								   *
- *																		 *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
  ***************************************************************************/
 
 /* The file is modified by Wei Qin for arm target.
@@ -324,7 +324,7 @@ static void arm_swap(void *buf, int count)
 		char temp[8];
 		char *src = (char *) buf + count - 1;
 		char *dst = temp;
-		
+
 		do
 		{
 			*dst = *src;
@@ -347,7 +347,7 @@ bool arm_syscall_fork(armulator *emu) { RETURN(-EINVAL); return false; }
 
 bool arm_syscall_read(armulator *emu)
 {
-	
+
 SYSCALL_STAGE_0
   {
 	int fd;
@@ -361,7 +361,7 @@ SYSCALL_STAGE_0
 	if (emu->is_verbose())
 		fprintf(stderr, "read(fd=%d, buf=0x%08x, count=%d)\n",
 			fd, buf_addr, (int)count);
-		
+
 	emu->syscall_alloc_buf(count);
 	emu->syscall_iret = read(fd, emu->syscall_buf, count);
 	if(emu->syscall_iret > 0) {
@@ -522,7 +522,7 @@ bool arm_syscall_close(armulator *emu)
 {
 	int fd;
 	int ret;
-	
+
 	fd = PARM(0);
 	if (emu->is_verbose())
 		fprintf(stderr, "close(fd=%d)\n", fd);
@@ -550,7 +550,7 @@ bool arm_syscall_lseek(armulator *emu)
 	off_t offset;
 	int whence;
 	off_t ret;
-	
+
 	fildes = PARM(0);
 	offset = PARM(1);
 	whence = PARM(2);
@@ -564,7 +564,7 @@ bool arm_syscall_lseek(armulator *emu)
 bool arm_syscall_getpid(armulator *emu)
 {
 	pid_t pid;
-	
+
 	if (emu->is_verbose())
 		fprintf(stderr, "getpid()\n");
 	pid = getpid();
@@ -578,7 +578,7 @@ bool arm_syscall_setuid(armulator *emu) { RETURN(-EINVAL); return false; }
 bool arm_syscall_getuid(armulator *emu)
 {
 	uid_t uid;
-	
+
 	if (emu->is_verbose())
 		fprintf(stderr, "getuid()\n");
 	uid = getuid();
@@ -692,7 +692,7 @@ bool arm_syscall_brk(armulator *emu)
 {
 	word_t new_brk_point;
 	bool success;
-	
+
 	new_brk_point = PARM(0);
 	success = true;/*false*/;
 	if (emu->is_verbose())
@@ -702,7 +702,7 @@ bool arm_syscall_brk(armulator *emu)
 		emu->syscall_set_brk(new_brk_point);
 		success = true;
 	}
-	
+
 	RETURN(emu->syscall_get_brk());
 	return success;
 }
@@ -727,7 +727,7 @@ bool arm_syscall_signal(armulator *emu)
 bool arm_syscall_geteuid(armulator *emu)
 {
 	uid_t uid;
-	
+
 	if (emu->is_verbose())
 		fprintf(stderr, "geteuid()\n");
 	uid = geteuid();
@@ -738,7 +738,7 @@ bool arm_syscall_geteuid(armulator *emu)
 bool arm_syscall_getegid(armulator *emu)
 {
 	gid_t gid;
-	
+
 	if (emu->is_verbose())
 		fprintf(stderr, "getegid()\n");
 	gid = getegid();
@@ -790,10 +790,10 @@ bool arm_syscall_munmap(armulator *emu)
 {
 #if 0
 	size_t u = (size_t)PARM(1);
-	
+
 	if (emu->syscall_get_brk() - u > emu->syscall_get_brk())
 		goto err;
-	
+
 	if (emu->syscall_get_brk() - u < MMAP_BASE)
 		u = (size_t)(emu->syscall_get_brk() - MMAP_BASE);
 
@@ -971,7 +971,7 @@ SYSCALL_STAGE_FALSE
 
 bool arm_syscall_fstat(armulator *emu)
 {
-	
+
 SYSCALL_STAGE_0
   {
 	int fd;
@@ -1368,7 +1368,7 @@ bool arm_syscall_lchown32(armulator *emu) { RETURN(-EINVAL); return false; }
 bool arm_syscall_getuid32(armulator *emu)
 {
 	uid_t uid;
-	
+
 	if (emu->is_verbose())
 		fprintf(stderr, "getuid32()\n");
 	uid = getuid();
@@ -1389,7 +1389,7 @@ bool arm_syscall_getgid32(armulator *emu)
 bool arm_syscall_geteuid32(armulator *emu)
 {
 	uid_t uid;
-	
+
 	if (emu->is_verbose())
 		fprintf(stderr, "geteuid32()\n");
 	uid = geteuid();
@@ -1400,7 +1400,7 @@ bool arm_syscall_geteuid32(armulator *emu)
 bool arm_syscall_getegid32(armulator *emu)
 {
 	gid_t gid;
-	
+
 	if (emu->is_verbose())
 		fprintf(stderr, "getegid32()\n");
 	gid = getegid();
@@ -1661,11 +1661,11 @@ void do_syscall(armulator *emu, arm_inst_t inst)
 {
 	int syscall_num;
 	bool ret = false;
-	
+
 	syscall_num	= SYSCALL_NUM & 0xff;
 	if (emu->is_verbose())
 		fprintf(stderr, "got a system call (number : %u, name : %s)\n", syscall_num, arm_get_syscall_name(syscall_num));
-		
+
 	fflush(stderr);
 	switch(syscall_num)
 	{
@@ -1891,7 +1891,7 @@ void do_syscall(armulator *emu, arm_inst_t inst)
 		case __SYSCALL_getdents64: ret = arm_syscall_getdents64(emu); break;
 		case __SYSCALL_fcntl64: ret = arm_syscall_fcntl64(emu); break;
 	}
-	
+
 	if(!ret)
 	{
 		if (emu->is_verbose())
@@ -1901,4 +1901,3 @@ void do_syscall(armulator *emu, arm_inst_t inst)
 	{
 	}
 }
-

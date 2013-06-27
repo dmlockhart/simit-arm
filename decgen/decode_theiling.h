@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -55,7 +55,7 @@ class decode_theiling_node {
 
 		/* get the total number of inner nodes under the node */
 		unsigned getTotalNodeCount() {return totalNodeCount;}
-		
+
 		/* check wellformedness */
 		bool isWellFormed() {return table->checkWellFormedness();}
 
@@ -71,10 +71,10 @@ class decode_theiling_node {
 
 		/* decoding schemes */
 		enum {
-			DECODE_NULL,                                      
-			DECODE_CHECK,                                      
-			DECODE_TABLE                                      
-		} scheme;   
+			DECODE_NULL,
+			DECODE_CHECK,
+			DECODE_TABLE
+		} scheme;
 
 		/* decoding information */
 		InstWord tab_mask;

@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -81,10 +81,10 @@ typedef class binary_pattern {
 
 	private:
 
-		/* pointer to array of masks and signatures (mask first) 
+		/* pointer to array of masks and signatures (mask first)
 		 * data[0]'s LSB is the lowest bit
 		 */
-		unsigned *data; 
+		unsigned *data;
 
 		/* length of the pattern */
 		unsigned len;
@@ -110,7 +110,7 @@ typedef class binary_pattern {
 
 } BinPattern;
 
-/** Concatenate two patterns. 
+/** Concatenate two patterns.
  *  @param x The high order bits.
  *  @param y The low order bits.
  */

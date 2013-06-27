@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -120,17 +120,17 @@
 #define disasm_teq_3s disasm_tst_3		/*0x33*/
 
 
-#define disasm_ld1_imm disasm_ldst1_imm	
-#define disasm_ld1_imm_p disasm_ldst1_imm	
+#define disasm_ld1_imm disasm_ldst1_imm
+#define disasm_ld1_imm_p disasm_ldst1_imm
 #define disasm_ld1_imm_b disasm_ldst1_imm
 #define disasm_ld1_imm_pb disasm_ldst1_imm
 
-#define disasm_ld1_reg disasm_ldst1_reg	
+#define disasm_ld1_reg disasm_ldst1_reg
 #define disasm_ld1_reg_p disasm_ldst1_reg
 #define disasm_ld1_reg_b disasm_ldst1_reg
 #define disasm_ld1_reg_pb disasm_ldst1_reg
 
-#define disasm_ld2_imm disasm_ldst2_imm	
+#define disasm_ld2_imm disasm_ldst2_imm
 #define disasm_ld2_reg disasm_ldst2_reg
 
 #define disasm_st1_imm disasm_ldst1_imm
@@ -138,7 +138,7 @@
 #define disasm_st1_imm_b disasm_ldst1_imm
 #define disasm_st1_imm_pb disasm_ldst1_imm
 
-#define disasm_st1_reg disasm_ldst1_reg	
+#define disasm_st1_reg disasm_ldst1_reg
 #define disasm_st1_reg_p disasm_ldst1_reg
 #define disasm_st1_reg_b disasm_ldst1_reg
 #define disasm_st1_reg_pb disasm_ldst1_reg
@@ -156,7 +156,7 @@
 #define disasm_umull_s disasm_umull
 #define disasm_umlal_s disasm_umlal
 
-#define disasm_ldd_imm disasm_ldstd_imm	
+#define disasm_ldd_imm disasm_ldstd_imm
 #define disasm_ldd_reg disasm_ldstd_reg
 
 #define disasm_std_imm disasm_ldstd_imm
@@ -180,7 +180,7 @@ const char *arm_regnames[] =
 const char *arm_shift[] =
 {"lsl", "lsr", "asr", "ror"};
 
-const char *msr_fields[] = 
+const char *msr_fields[] =
 {"", "c", "x", "cx", "s", "cs", "xs", "cxs",
  "f", "cf", "xf", "cxf", "sf", "csf", "xsf", "cxsf"};
 
@@ -212,7 +212,7 @@ char *disasm_default(arm_inst_t inst, arm_addr_t pc, char *buf)
 	return buf;
 }
 
-static const char *arm_dpinames[] = 
+static const char *arm_dpinames[] =
 {"and", "eor", "sub", "rsb", "add", "adc", "sbc", "rsc",
  "tst", "teq", "cmp", "cmn", "orr", "mov", "bic", "mvn"};
 
@@ -265,7 +265,7 @@ static char *disasm_unop_1(arm_inst_t inst, arm_addr_t addr, char *buf)
 	buf += disasm_shifter_operand1(inst, buf);
 	buf += sprintf(buf, ";\n");
 	return buf;
-} 
+}
 
 static char *disasm_unop_2(arm_inst_t inst, arm_addr_t addr, char *buf)
 {
@@ -391,12 +391,12 @@ static char *disasm_ldst1_reg(arm_inst_t inst, arm_addr_t addr, char *buf)
 		buf += sprintf(buf, "[%s, %s%s",
 			arm_regnames[RNFLD], UFLD?"":"-", arm_regnames[RMFLD]);
 
-		if (shift_imm==0 && type==0) 
+		if (shift_imm==0 && type==0)
 			buf += sprintf(buf, "]");
 		else if (shift_imm==0 && type==3)
 			buf += sprintf(buf, ", rrx]");
 		else
-			buf += sprintf(buf, ", %s #%u]", arm_shift[type], shift_imm); 
+			buf += sprintf(buf, ", %s #%u]", arm_shift[type], shift_imm);
 
 		if (WFLD)
 			buf += sprintf(buf, "!");
@@ -407,8 +407,8 @@ static char *disasm_ldst1_reg(arm_inst_t inst, arm_addr_t addr, char *buf)
 
 		if (shift_imm==0 && type==3)
 			buf += sprintf(buf, ", rrx");
-		else if (shift_imm || type) 
-			buf += sprintf(buf, ", %s #%u", arm_shift[type], shift_imm); 
+		else if (shift_imm || type)
+			buf += sprintf(buf, ", %s #%u", arm_shift[type], shift_imm);
 	}
 
 	buf += sprintf(buf, ";\n");
@@ -458,7 +458,7 @@ static char *disasm_ldst2_reg(arm_inst_t inst, arm_addr_t addr, char *buf)
 	buf += sprintf(buf, ";\n");
 	return buf;
 }
-	
+
 static char *disasm_swap(arm_inst_t inst, arm_addr_t addr, char *buf)
 {
     buf += sprintf(buf, "swp%s %s, %s, [%s];\n",
@@ -504,7 +504,7 @@ static char *disasm_mla(arm_inst_t inst, arm_addr_t addr, char *buf)
 	buf += sprintf(buf, "mla%s%s %s, %s, %s, %s;\n",
 		arm_conditional[COND], SFLD?"s":"",
 		arm_regnames[RNFLD], arm_regnames[RMFLD],
-		arm_regnames[RSFLD], arm_regnames[RDFLD]); 
+		arm_regnames[RSFLD], arm_regnames[RDFLD]);
 	return buf;
 }
 
@@ -512,7 +512,7 @@ static char *disasm_mul(arm_inst_t inst, arm_addr_t addr, char *buf)
 {
 	buf += sprintf(buf, "mul%s%s %s, %s, %s;\n",
 		arm_conditional[COND], SFLD?"s":"",
-		arm_regnames[RNFLD], arm_regnames[RMFLD], arm_regnames[RSFLD]); 
+		arm_regnames[RNFLD], arm_regnames[RMFLD], arm_regnames[RSFLD]);
 	return buf;
 }
 
@@ -521,7 +521,7 @@ static char *disasm_smull(arm_inst_t inst, arm_addr_t addr, char *buf)
 	buf += sprintf(buf, "smull%s%s %s, %s, %s, %s;\n",
 		arm_conditional[COND], SFLD?"s":"",
 		arm_regnames[RDFLD], arm_regnames[RNFLD],
-		arm_regnames[RMFLD], arm_regnames[RSFLD]); 
+		arm_regnames[RMFLD], arm_regnames[RSFLD]);
 	return buf;
 }
 
@@ -530,7 +530,7 @@ static char *disasm_smlal(arm_inst_t inst, arm_addr_t addr, char *buf)
 	buf += sprintf(buf, "smlal%s%s %s, %s, %s, %s;\n",
 		arm_conditional[COND], SFLD?"s":"",
 		arm_regnames[RDFLD], arm_regnames[RNFLD],
-		arm_regnames[RMFLD], arm_regnames[RSFLD]); 
+		arm_regnames[RMFLD], arm_regnames[RSFLD]);
 	return buf;
 }
 
@@ -539,7 +539,7 @@ static char *disasm_umull(arm_inst_t inst, arm_addr_t addr, char *buf)
 	buf += sprintf(buf, "umull%s%s %s, %s, %s, %s;\n",
 		arm_conditional[COND], SFLD?"s":"",
 		arm_regnames[RDFLD], arm_regnames[RNFLD],
-		arm_regnames[RMFLD], arm_regnames[RSFLD]); 
+		arm_regnames[RMFLD], arm_regnames[RSFLD]);
 	return buf;
 }
 
@@ -548,7 +548,7 @@ static char *disasm_umlal(arm_inst_t inst, arm_addr_t addr, char *buf)
 	buf += sprintf(buf, "umlal%s%s %s, %s, %s, %s;\n",
 		arm_conditional[COND], SFLD?"s":"",
 		arm_regnames[RDFLD], arm_regnames[RNFLD],
-		arm_regnames[RMFLD], arm_regnames[RSFLD]); 
+		arm_regnames[RMFLD], arm_regnames[RSFLD]);
 	return buf;
 }
 
@@ -873,5 +873,3 @@ int arm_decode_regname(const char *name)
 
 	return -1;
 }
-
-

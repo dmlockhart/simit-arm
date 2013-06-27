@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -48,7 +48,7 @@ field {
 	rotate:4;
 	shift_imm:5;
 	field_mask:4;
-	
+
 	imm4_1:4;
 	imm4_2:4;
 	imm8:8;
@@ -323,28 +323,28 @@ group ldm_mode2 {
 
 op ldm2_000(001:01:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr - pcount + 4;
 "
 }
 
 op ldm2_010(011:01:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr;
 "
 }
 
 op ldm2_100(101:01:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr - pcount;
 "
 }
 
 op ldm2_110(111:01:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr + 4;
 "
 }
@@ -355,14 +355,14 @@ group ldm_mode3 {
 
 op ldm3_000(001:01:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr - pcount + 4;
 "
 }
 
 op ldm3_001(001:11:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr - pcount + 4;
 	WRITE_REG($rn$, base_addr - pcount);
 "
@@ -370,14 +370,14 @@ execute = "
 
 op ldm3_010(011:01:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr;
 "
 }
 
 op ldm3_011(011:11:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr;
 	WRITE_REG($rn$, base_addr + pcount);
 "
@@ -385,14 +385,14 @@ execute = "
 
 op ldm3_100(101:01:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr - pcount;
 "
 }
 
 op ldm3_101(101:11:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr - pcount;
 	WRITE_REG($rn$, base_addr - pcount);
 "
@@ -400,14 +400,14 @@ execute = "
 
 op ldm3_110(111:01:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr + 4;
 "
 }
 
 op ldm3_111(111:11:rn) {
 execute = "
-	base_addr = READ_REG($rn$);	
+	base_addr = READ_REG($rn$);
 	start_addr = base_addr + 4;
 	WRITE_REG($rn$, base_addr + pcount);
 "
@@ -650,7 +650,7 @@ op movs(----00011011----:rd:shifts_s)
 execute="
 	rslt32 = $shifts_s$;
 	if ($rd$==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG($rd$, rslt32);
@@ -1281,7 +1281,7 @@ op ldt_imm(----0100:ufld:011:rn:rd:imm12) {
 execute="
 	address = READ_REG($rn$);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_WORD(address,&rslt32);
 	TRANSLATION_MODE(current_mode);
 
@@ -1302,7 +1302,7 @@ execute="
 	address = READ_REG($rn$);
 	current_mode = TRANSLATION_MODE(USR_MODE);
 
-			
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -1340,7 +1340,7 @@ execute="
 	offset = $imm_shifts$;
 	address = READ_REG($rn$);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -1454,7 +1454,7 @@ op ld1_reg_b(----0110:ufld:101:rn:rd:imm_shifts) {
 execute="
 	offset = $imm_shifts$;
 	address = READ_REG($rn$);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -1519,7 +1519,7 @@ execute="
 	offset = ($imm4_1$ << 4) | $imm4_2$;
 
 	address = READ_REG($rn$);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -1619,7 +1619,7 @@ op ld2_reg_s(----0000:ufld:0:-:1:rn:rd:0000:1101:rm)
 execute="
 	offset = READ_REG($rm$);
 	address = READ_REG($rn$);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -1698,7 +1698,7 @@ op stt_imm_b(----0100:ufld:110:rn:rd:imm12)
 execute="
 	address = READ_REG($rn$);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_WRITE_BYTE(address, READ_REG($rd$));
 	TRANSLATION_MODE(current_mode);
 
@@ -1861,7 +1861,7 @@ execute="
 	address = READ_REG($rn$);
 
 	MMU_WRITE_HALF_WORD(address, READ_REG($rd$));
-	
+
 	if (fault){
 		ABORT( DataAbortV );
 	}
@@ -1893,7 +1893,7 @@ execute="
 	address = READ_REG($rn$);
 
 	MMU_WRITE_HALF_WORD(address, READ_REG($rd$));
-	
+
 	if (fault){
 		ABORT( DataAbortV );
 	}
@@ -1957,9 +1957,9 @@ op ldm1(----100:ldm_mode1:reg_mask)
 {
 execute="
 	pcount = popcount16($reg_mask$)*4;
-	
+
 	$ldm_mode1$
-	
+
 	address = start_addr-(start_addr&0x3);
 	iterator = rmo16($reg_mask$);
 	while (iterator<16) {
@@ -1987,7 +1987,7 @@ execute="
 
 	address = start_addr-(start_addr&0x3);
 	current_mode = CPU_MODE;
-	SWITCH_BANK(current_mode,USR_MODE);	
+	SWITCH_BANK(current_mode,USR_MODE);
 
 	iterator = rmo16($reg_mask2$);
 	while (iterator<15) {
@@ -2005,7 +2005,7 @@ execute="
 		iterator++;
 	}
 
-	SWITCH_BANK(USR_MODE,current_mode);	
+	SWITCH_BANK(USR_MODE,current_mode);
 
 "
 }
@@ -2179,7 +2179,7 @@ execute="
 
 op cdp(----1110:----:----:----:cp_num:---0:----){
 execute="
-		
+
 	if (emu->copro[$cp_num$] == NULL){
 		ABORT2(UndefinedInstrV);
 	}
@@ -2188,7 +2188,7 @@ execute="
 		ABORT2(UndefinedInstrV);
 	}
 
-	
+
 	cpab = emu->copro[$cp_num$]->CDP(ARMul_FIRST, $inst$);
 	while (cpab == ARMul_BUSY) {
 		if (emu->int_pending ()) {
@@ -2216,7 +2216,7 @@ execute="
 	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[$cp_num$]->MCR(ARMul_FIRST, $inst$, READ_REG($rd$));
 
 	while (cpab == ARMul_BUSY) {
@@ -2234,7 +2234,7 @@ execute="
 }
 
 op mrc(----1110:---1:----:rd:cp_num:---1:----){
-execute="	
+execute="
 	if (emu->copro[$cp_num$] == NULL){
 		ABORT2(UndefinedInstrV);
 	}
@@ -2242,7 +2242,7 @@ execute="
 	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[$cp_num$]->MRC(ARMul_FIRST, $inst$, &val32);
 
 	while (cpab == ARMul_BUSY) {
@@ -2256,7 +2256,7 @@ execute="
 	if (cpab == ARMul_CANT){
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	if ($rd$  == 15) {
 		ASGN_N ((val32 & (1<<31)) != 0);
 		ASGN_Z ((val32 & (1<<30)) != 0);
@@ -2281,7 +2281,7 @@ execute="
 	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[$cp_num$]->LDC(ARMul_FIRST, $inst$, 0);
 
 	while (cpab == ARMul_BUSY) {
@@ -2312,7 +2312,7 @@ execute="
 		}
 		cpab = emu->copro[$cp_num$]->LDC(ARMul_DATA, $inst$, rslt32);
 	}
-"	
+"
 }
 
 op ldc2(----110:ldc_mode2:rn:----:cp_num:imm8){
@@ -2328,7 +2328,7 @@ execute="
 	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[$cp_num$]->LDC(ARMul_FIRST, $inst$, 0);
 
 	while (cpab == ARMul_BUSY) {
@@ -2350,7 +2350,7 @@ execute="
 		WRITE_REG($rn$, base_addr);
 		ABORT( DataAbortV );
 	}
-	
+
 	address = start_addr;
 	cpab = emu->copro[$cp_num$]->LDC(ARMul_DATA, $inst$, rslt32);
 
@@ -2363,7 +2363,7 @@ execute="
 		}
 		cpab = emu->copro[$cp_num$]->LDC(ARMul_DATA, $inst$, rslt32);
 	}
-"	
+"
 }
 
 op stc1(----110:stc_mode1:----:cp_num:imm8){
@@ -2378,7 +2378,7 @@ execute="
 	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[$cp_num$]->STC(ARMul_FIRST, $inst$, &rslt32);
 
 	while (cpab == ARMul_BUSY) {
@@ -2406,7 +2406,7 @@ execute="
 			ABORT( DataAbortV );
 		}
 	}
-"	
+"
 }
 
 op stc2(----110:stc_mode2:rn:----:cp_num:imm8){
@@ -2422,7 +2422,7 @@ execute="
 	if (!CP_ACCESS_ALLOWED ($cp_num$)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[$cp_num$]->STC(ARMul_FIRST, $inst$, &rslt32);
 
 	while (cpab == ARMul_BUSY) {
@@ -2436,7 +2436,7 @@ execute="
 	if (cpab == ARMul_CANT){
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	WRITE_REG($rn$, address);
 
 	address = start_addr;
@@ -2455,7 +2455,7 @@ execute="
 			ABORT( DataAbortV );
 		}
 	}
-"	
+"
 }
 op mra(----1100:0101:rn:rd:0000:0000:0000){
 execute="
@@ -2464,7 +2464,7 @@ execute="
 		val32 = (emu->accumulator >> 32) & 255;
 		if (val32 & 128)
 			val32 -= 256;
-		
+
 		WRITE_REG($rd$,emu->accumulator);
 		WRITE_REG($rn$,val32);
 	}
@@ -2485,7 +2485,7 @@ execute="
 }
 op clz(----00010110:1111:rd:1111:0001:rm){
 execute="
-	
+
 	if (emu->is_xscale()) {
 		val32=READ_REG($rm$);
 		if(val32==0){
@@ -2499,7 +2499,7 @@ execute="
 	}
 	else
 		ABORT2(UndefinedInstrV);
-"	
+"
 }
 
 op ldd_imm(----0000:ufld:1:-:0:rn:rd:imm4_1:1101:imm4_2)
@@ -2508,11 +2508,11 @@ execute="
 	if (emu->is_xscale() ) {
 		if($rd$ & 1)
 			ABORT2(UndefinedInstrV);
-		
+
 		offset = ($imm4_1$ << 4) | $imm4_2$;
 
 		address = READ_REG($rn$);
-	
+
 		fault = NO_FAULT;
 
 		if(address & 7)/* Alignment violation.  */
@@ -2523,13 +2523,13 @@ execute="
 			ABORT( DataAbortV );
 		}
 		WRITE_REG($rd$, rslt32);
-		
+
 		MMU_READ_WORD(address+4,&rslt32);
 		if(fault){
 			ABORT( DataAbortV );
 		}
 		WRITE_REG($rd$+1, rslt32);
-		
+
 		WRITE_REG($rn$, $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset);
 	}
 	else
@@ -2543,11 +2543,11 @@ execute="
 	if (emu->is_xscale() ) {
 		if($rd$ & 1)
 			ABORT2(UndefinedInstrV);
-		
+
 		offset = ($imm4_1$ << 4) | $imm4_2$;
-	
+
 		address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
-		
+
 		fault = NO_FAULT;
 
 		if(address & 7)/* Alignment violation.  */
@@ -2558,7 +2558,7 @@ execute="
 			ABORT( DataAbortV );
 		}
 		WRITE_REG($rd$, rslt32);
-		
+
 		MMU_READ_WORD(address+4,&rslt32);
 		if(fault){
 			ABORT( DataAbortV );
@@ -2567,7 +2567,7 @@ execute="
 
 		if ($wfld$)
 			WRITE_REG($rn$, address);
-	
+
 	}
 	else
 		ABORT2(UndefinedInstrV);
@@ -2583,7 +2583,7 @@ execute="
 
 		offset = READ_REG($rm$);
 		address = READ_REG($rn$);
-	
+
 		fault = NO_FAULT;
 
 		if(address & 7)/* Alignment violation.  */
@@ -2594,7 +2594,7 @@ execute="
 			ABORT( DataAbortV );
 		}
 		WRITE_REG($rd$, rslt32);
-		
+
 		MMU_READ_WORD(address+4,&rslt32);
 		if(fault){
 			ABORT( DataAbortV );
@@ -2614,7 +2614,7 @@ execute="
 	if (emu->is_xscale() ) {
 		if($rd$ & 1)
 			ABORT2(UndefinedInstrV);
-	
+
 		offset = READ_REG($rm$);
 		address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
 
@@ -2628,7 +2628,7 @@ execute="
 			ABORT( DataAbortV );
 		}
 		WRITE_REG($rd$, rslt32);
-		
+
 		MMU_READ_WORD(address+4,&rslt32);
 		if(fault){
 			ABORT( DataAbortV );
@@ -2649,7 +2649,7 @@ execute="
 	if (emu->is_xscale() ) {
 		if($rd$ & 1)
 			ABORT2(UndefinedInstrV);
-	
+
 		offset = ($imm4_1$ << 4) | $imm4_2$;
 		address = READ_REG($rn$);
 
@@ -2680,7 +2680,7 @@ execute="
 	if (emu->is_xscale() ) {
 		if($rd$ & 1)
 			ABORT2(UndefinedInstrV);
-	
+
 		offset = ($imm4_1$ << 4) | $imm4_2$;
 		address = $ufld$?READ_REG($rn$)+offset:READ_REG($rn$)-offset;
 
@@ -2712,7 +2712,7 @@ execute="
 	if (emu->is_xscale() ) {
 		if($rd$ & 1)
 			ABORT2(UndefinedInstrV);
-	
+
 		offset = READ_REG($rm$);
 		address = READ_REG($rn$);
 
@@ -2774,23 +2774,23 @@ op smla_xy(----00010000:rd:rn:rs:1:y_bit:x_bit:0:rm)
 execute="
 	if (emu->is_xscale() ) {
 	/*  SMLAxy insn.  */
-		
+
 		val32 = READ_REG($rn$);
-		
-		op1 = READ_REG($rm$); 
+
+		op1 = READ_REG($rm$);
 		op2 = READ_REG($rs$);
 
 		op1 = $x_bit$ ? op1>>16 : op1&0xFFFF;
 		op2 = $y_bit$ ? op2>>16 : op2&0xFFFF;
-						
+
 		if (op1 & 0x8000)
 			op1 -= 65536;
 		if (op2 & 0x8000)
 			op2 -= 65536;
-		
+
 		tmp32 = op1 * op2;
 		rslt32 = val32 + tmp32;
-		
+
 		WRITE_REG($rd$, rslt32);
 
 		ASGN_Q((val32^tmp32^-1) & (val32^rslt32));
@@ -2806,12 +2806,12 @@ execute="
 	if (emu->is_xscale() ) {
 	/*  SMLALxy insn.  */
 
-		op1 = READ_REG($rm$); 
+		op1 = READ_REG($rm$);
 		op2 = READ_REG($rs$);
 
 		op1 = $x_bit$ ? op1>>16 : op1&0xFFFF;
 		op2 = $y_bit$ ? op2>>16 : op2&0xFFFF;
-						
+
 		if (op1 & 0x8000)
 			op1 -= 65536;
 		if (op2 & 0x8000)
@@ -2834,12 +2834,12 @@ op smlaw_y(----00010010:rd:rn:rs:1:y_bit:0:0:rm)
 execute="
 	if (emu->is_xscale() ) {
 	/*  SMLAWy insn.  */
-		
+
 		val32  =  READ_REG($rn$);
 
 		op2 = READ_REG($rs$);
 		op2 = $y_bit$ ? op2>>16 : op2&0xFFFF;
-						
+
 		if (op2 & 0x8000)
 			op2 -= 65536;
 
@@ -2849,7 +2849,7 @@ execute="
 		WRITE_REG($rd$,rslt32);
 
 		ASGN_Q((val32^tmp32^-1) & (val32^rslt32));
-	
+
 	}
 	else
 		ABORT2(UndefinedInstrV);
@@ -2862,7 +2862,7 @@ execute="
 	if (emu->is_xscale() ) {
 	/*  SMULxy insn.  */
 
-		op1 = READ_REG($rm$); 
+		op1 = READ_REG($rm$);
 		op2 = READ_REG($rs$);
 
 		op1 = $x_bit$ ? op1>>16 : op1&0xFFFF;
@@ -2888,14 +2888,14 @@ execute="
 
 		op2 = READ_REG($rs$);
 		op2 = $y_bit$ ? op2>>16 : op2&0xFFFF;
-						
+
 		if (op2 & 0x8000)
 			op2 -= 65536;
 
-		rslt32  = (uint32_t)( (int64_t)READ_REG($rm$)*op2  >> 16); 
+		rslt32  = (uint32_t)( (int64_t)READ_REG($rm$)*op2  >> 16);
 
 		WRITE_REG($rd$,rslt32);
-	
+
 	}
 	else
 		ABORT2(UndefinedInstrV);
@@ -2908,7 +2908,7 @@ execute="
 	if (emu->is_xscale() ) {
 	/*   QADD insn.  */
 
-		val32 = READ_REG($rm$); 
+		val32 = READ_REG($rm$);
 		tmp32 = READ_REG($rn$);
 		rslt32 = val32 + tmp32;
 
@@ -2917,7 +2917,7 @@ execute="
 			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
 			SET_Q;
 		}
-		
+
 		WRITE_REG($rd$,rslt32);
 	}
 	else
@@ -2932,7 +2932,7 @@ execute="
 	/*   QDADD insn.  */
 
 		val32 = READ_REG($rm$);
-		tmp32 = READ_REG($rn$); 
+		tmp32 = READ_REG($rn$);
 
 
 		if ((tmp32^tmp32^-1) & (tmp32^(tmp32<<1))){
@@ -2941,14 +2941,14 @@ execute="
 		}
 		else
 			tmp32<<=1;
-		
+
 		rslt32 = val32 + tmp32;
-		
+
 		if ((val32^tmp32^-1) & (val32^rslt32)){
 			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
 			SET_Q;
 		}
-		
+
 		WRITE_REG($rd$,rslt32);
 	}
 	else
@@ -2962,7 +2962,7 @@ execute="
 	if (emu->is_xscale() ) {
 	/*   QSUB insn.  */
 
-		val32 = READ_REG($rm$); 
+		val32 = READ_REG($rm$);
 		tmp32 = READ_REG($rn$);
 		rslt32 = val32 - tmp32;
 
@@ -2971,7 +2971,7 @@ execute="
 			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
 			SET_Q;
 		}
-		
+
 		WRITE_REG($rd$,rslt32);
 	}
 	else
@@ -2986,7 +2986,7 @@ execute="
 	/*   QDSUB insn.  */
 
 		val32 = READ_REG($rm$);
-		tmp32 = READ_REG($rn$); 
+		tmp32 = READ_REG($rn$);
 
 
 		if ((tmp32^tmp32^-1) & (tmp32^(tmp32<<1))){
@@ -2995,14 +2995,14 @@ execute="
 		}
 		else
 			tmp32<<=1;
-		
+
 		rslt32 = val32 - tmp32;
-		
+
 		if ((val32^tmp32) & (val32^rslt32)){
 			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
 			SET_Q;
 		}
-		
+
 		WRITE_REG($rd$,rslt32);
 	}
 	else

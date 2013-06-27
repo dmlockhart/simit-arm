@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,22 +12,23 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 /***************************************************************************
-						  loader.c  -  description
-							 -------------------
-	begin				: Wed Sep 26 2001
-	copyright			: (C) 2001 CEA and Université Paris XI Orsay
-	author				: Gilles Mouchard
-	email				: gilles.mouchard@lri.fr, gilles.mouchard@cea.fr
+                          loader.c  -  description
+                             -------------------
+    begin                : Wed Sep 26 2001
+    copyright            : (C) 2001 CEA and UniversitÃ© Paris XI Orsay
+    author               : Gilles Mouchard
+    email                : gilles.mouchard@lri.fr, gilles.mouchard@cea.fr
  ***************************************************************************/
 
 /***************************************************************************
- *																		 *
+ *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or	 *
- *   (at your option) any later version.								   *
- *																		 *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
  ***************************************************************************/
 
 #include "read_elf.h"
@@ -107,7 +108,7 @@ void arm_emulator::load_elf32(const char *filename)
 	void *new_section;
 	Elf32_Addr new_section_addr;
 	FILE *fobj;
-	int i;	
+	int i;
 
 	data_base = 0;
 	data_size = 0;
@@ -123,7 +124,7 @@ void arm_emulator::load_elf32(const char *filename)
 
 	if(hdr == NULL) {
 		fprintf(stderr, "Could not read ELF32 header from file: %s.\n",
-			   	filename);
+				filename);
 		exit(1);
 	}
 
@@ -150,7 +151,7 @@ void arm_emulator::load_elf32(const char *filename)
 	prog_base = hdr->e_entry;
 
 	shdr = ReadSectionHeaders(hdr, fobj);
-	
+
 	if(shdr == NULL) {
 		fprintf(stderr, "Can't read section headers from executable\n");
 		exit(1);
@@ -195,7 +196,7 @@ void arm_emulator::load_elf32(const char *filename)
 					mem->set_region_permission(new_section_addr,
 						new_section_size,
 						MEMORY_PAGE_READABLE | MEMORY_PAGE_EXECUTABLE);
-	
+
 					if (verbose)
 						fprintf(stderr, "Mark memory address %x len %x "
 							"as text segment\n", new_section_addr,
@@ -222,7 +223,7 @@ void arm_emulator::load_elf32(const char *filename)
 }
 
 
-void arm_emulator::load_program(const char *filename, 
+void arm_emulator::load_program(const char *filename,
 		int argc, char *argv[], char *envp[])
 {
 	int ii;
@@ -236,7 +237,7 @@ void arm_emulator::load_program(const char *filename,
 		stack_base = MEMORY_MAX_ADDR;
 	stack_base -= stack_base % 4096;
 
-	/* mark memory space available 
+	/* mark memory space available
 	 * from address 0x00000000 to STACK_BASE
 	 */
 	mem->mark_region_available(0x0, stack_base,
@@ -268,7 +269,7 @@ void arm_emulator::load_program(const char *filename,
 		stack_ptr += 4;
 	stack_ptr += 4;
 
-	/*write argv to stack*/ 
+	/*write argv to stack*/
 	for (ii=0; ii<argc; ii++) {
 		mem->write_word(argAddr+ii*4, stack_ptr);
 		mem->write_block(argv[ii], stack_ptr, strlen(argv[ii]));
@@ -300,7 +301,7 @@ void arm_emulator::load_program(const char *filename,
 	/* initialize brk point to 4k byte boundary */
 	target_addr_t abrk = data_base+data_size+4096;
 	abrk -= abrk % 4096;
-	
+
 	syscall_set_brk(abrk);
 	syscall_set_mmap_brk(MMAP_BASE);
 }
@@ -328,7 +329,7 @@ void arm_emulator::load_binary(const char *file, arm_addr_t addr)
 	if (bif==NULL) {
 		fprintf(stderr,
 			"Error: failed to open image file %s.\n", file);
-		exit(1);	
+		exit(1);
 	}
 
 	if (verbose) {
@@ -449,13 +450,13 @@ bool arm_emulator::load_config(const char *filename)
 		{
 			setup_trap("data", mem);
 
-			vector<char> *str = reinterpret_cast<vector<char> *>((*pit)->path); 
+			vector<char> *str = reinterpret_cast<vector<char> *>((*pit)->path);
 
 			unsigned int addr = (*pit)->addr;
 			vector<char>::const_iterator strit;
 			for (strit = str->begin(); strit != str->end(); strit++)
 				mem->write_byte(addr++, *strit);
-			
+
 			if (verbose) {
 				fprintf(stderr,
 					"Saved %d bytes into memory at 0x%x.\n",

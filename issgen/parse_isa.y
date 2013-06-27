@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,6 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 %{
 
 #include <vector>
@@ -172,7 +173,7 @@ pattern:	TK_PAT {
 			;
 
 opfld_env:	opfld {
-				$$ = new OP_CON_ENV;	
+				$$ = new OP_CON_ENV;
 				$$->insert(*($1));
 				delete $1;
 			}
@@ -189,7 +190,7 @@ opfld_env:	opfld {
 			;
 
 opfld:		TK_IDENT '=' TK_STR {
-				$$ = new OP_CON_T($1, $3); 
+				$$ = new OP_CON_T($1, $3);
 			}
 			;
 %%

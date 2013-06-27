@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -103,14 +103,14 @@ void DecodeTheilingNode::decode()
 
 	this->maxHeight += 1;
 	this->minHeight += 1;
-	this->tab_mask= cmask;                      
+	this->tab_mask= cmask;
 	this->scheme = DECODE_TABLE;
 
 }
 
 void DecodeTheilingNode::emitXML(ostream& os, const string &indent)
 {
-	os << indent << "<table index=\"" << this->table->getIndex() 
+	os << indent << "<table index=\"" << this->table->getIndex()
 		<< "\">" << endl;
 	os << indent << "  <size>"<< this->table->getSize() << "</size>" << endl;
 
@@ -166,7 +166,7 @@ void DecodeTheilingNode::emitCStubDecs(ostream &os)
 					os << "_STUB_DEC(stub_" << dec << this->label
 						<< "_" << (*it)->table->getIndex() << ")" << endl;
 			}
-			for (it=children.begin(); it!=children.end(); it++) 
+			for (it=children.begin(); it!=children.end(); it++)
 				(*it)->emitCStubDecs(os);
 		}
 		default: break;
@@ -200,7 +200,7 @@ void DecodeTheilingNode::emitCArrays(ostream &os)
 			}
 			os << "_TABLE_DEF_END" << endl << endl;
 			for (it=children.begin(); it!=children.end(); it++)
-				(*it)->emitCArrays(os);                       
+				(*it)->emitCArrays(os);
 		}
 		default: break;
 	}
@@ -224,13 +224,13 @@ static vector<pair<unsigned int, unsigned int> > break_mask(InstWord x)
 		else if (flag) {
 			flag = false;
 			ret.push_back(pair<unsigned int, unsigned int>
-					(((1u<<len)-1)<<cumlen, from-cumlen));	
+					(((1u<<len)-1)<<cumlen, from-cumlen));
 			cumlen += len;
 		}
 	}
 	if (flag) {
 		ret.push_back(pair<unsigned int, unsigned int>
-					(((1u<<len)-1)<<cumlen, from-cumlen));	
+					(((1u<<len)-1)<<cumlen, from-cumlen));
 	}
 	return ret;
 }
@@ -240,7 +240,7 @@ void DecodeTheilingNode::emitCall(ostream &os, const string& indent)
 	switch(scheme) {
 		case DECODE_NULL:
 			assert(this->table->getSize());
-			os << indent << "_FUNC_CALL(" 
+			os << indent << "_FUNC_CALL("
 				<< (this->table->getEntries().front()).label
 				<< ");" << endl;
 			break;
@@ -251,7 +251,7 @@ void DecodeTheilingNode::emitCall(ostream &os, const string& indent)
 				<< PADDEDHEX << m << "," << PADDEDHEX << (m&
                    (this->table->getEntries().front()).signature)
 				<< ") {" << endl
-				<< indent << "  _FUNC_CALL(" 
+				<< indent << "  _FUNC_CALL("
 				<< (this->table->getEntries().front()).label
 				<< ");" << endl
 				<< indent << "} else _FUNC_CALL(default);" << endl;
@@ -261,7 +261,7 @@ void DecodeTheilingNode::emitCall(ostream &os, const string& indent)
 			vector<pair<unsigned int, unsigned int> > ms =
 				break_mask(this->tab_mask);
 			assert(ms.size());
-			os << indent << "_TABLE_JUMP" << ms.size() 
+			os << indent << "_TABLE_JUMP" << ms.size()
 				<<	"(table_" << dec << this->label;
 		    for (unsigned int i=0;i<ms.size();i++)
 				os << ", " << ms[i].first << ", " << ms[i].second;
@@ -282,7 +282,7 @@ void DecodeTheilingNode::emitCCode(ostream &os, const string& indent)
 				children[1]->emitCall(os, indent);
 				os << indent << "} else {" << endl;
 				children[0]->emitCall(os, indent);
-				os << indent << "}" 
+				os << indent << "}"
 					<< "/* " << PADDEDHEX << this->tab_mask << " */" << endl;
 			}
 			else {
@@ -295,7 +295,7 @@ void DecodeTheilingNode::emitCCode(ostream &os, const string& indent)
 			assert(this->table->getSize());
 			emitCall(os, indent);
 #if 0
-			os << indent << "FUNC_CALL(" 
+			os << indent << "FUNC_CALL("
 				<< (this->table->getEntries().front()).label
 				<< ");" << endl;
 #endif
@@ -338,7 +338,7 @@ void DecodeTheilingNode::emitCStubs(ostream &os)
 			os << "}" << endl << endl;
 		}
 #endif
-						   
+
 		default:
 			break;
 	}
@@ -363,7 +363,7 @@ void DecodeTheilingNode::emitC(ostream &os)
 	os << endl;
 	os << "Using Theiling algorithm" << endl;
 	os << "Decoder characteristics " << endl;
-	os << "Average height : " << this->height << endl;   
+	os << "Average height : " << this->height << endl;
     os << "Maximum height : " << this->maxHeight << endl;
     os << "Minimum height : " << this->minHeight << endl;
 	os << "Table entries  : " << this->totalTableSize << endl;

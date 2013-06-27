@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,6 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 #include <cstdlib>
 #include <cstdio>
 #include <pthread.h>
@@ -61,7 +62,7 @@ typedef arm_addr_t target_addr_t;
    in the emulator directory. However, the system-level interpretation
    routines are slightly different. They must take into account
    self-modifying code. If a MEM_WRITE_* modifies a compiled address,
-   the corresponding DLL must be unloaded. 
+   the corresponding DLL must be unloaded.
 
    The translated code is very different from the interpretation code.
    For user-level translation, care must be taken on WRITE_REG. If
@@ -239,7 +240,7 @@ dyn_arm_emulator::~dyn_arm_emulator()
  */
 
 #define  SIMIT_SYSTEM_LEVEL
-#include "auto_impl.h" 
+#include "auto_impl.h"
 #include "arm_iss.hpp"
 #include "arm_dec.h"
 
@@ -259,7 +260,7 @@ void dyn_arm_emulator::execute_system(arm_inst_t inst, word_t addr)
 /* The uimpl_xxxx routines are those in libarmemu.a
  */
 #undef   SIMIT_SYSTEM_LEVEL
-#include "auto_impl.h" 
+#include "auto_impl.h"
 #include "arm_iss.hpp"
 #include "arm_dec.h"
 
@@ -312,9 +313,9 @@ void dyn_arm_emulator::step_system()
 		io->do_cycle();
 		icount += prescale - pcount;
 		pcount = prescale;
-	
+
 		if (max_count_set && icount >= max_count)
-			status = ST_EXIT; 
+			status = ST_EXIT;
 	}
 
 #ifdef SINGLESTEP
@@ -327,14 +328,14 @@ fprintf(stderr, "=%x %x %x\n", get_pc(), sum, read_cpsr());
 #endif
 
 	/* see if the current PC can be loaded */
-	if (mmu->translate_instr_addr(get_pc(), &phy_addr, &ptr)) 
+	if (mmu->translate_instr_addr(get_pc(), &phy_addr, &ptr))
 	{
 		abort_addr = get_pc();
 		inst = ABORTWORD;
-		execute_system(inst, get_pc()); 
+		execute_system(inst, get_pc());
 		pcount--;
 	}
-	else 
+	else
 	{
 		unsigned ind = phy_addr >> shiftval;
 
@@ -352,11 +353,11 @@ L1:
 #endif
 			increment_compile_count(oldpcount - pcount);
 		}
-		else 
+		else
 		{
 			if (blk_info[ind].count > threshold)
 			{
-				if (blk_info[ind].count != -1u) 
+				if (blk_info[ind].count != -1u)
 				{
 					req_num++;
 					build_andor_load_lib(ind);
@@ -374,7 +375,7 @@ L1:
 			else
 				mem->read_word(phy_addr, &inst);
 
-			execute_system(inst, get_pc()); 
+			execute_system(inst, get_pc());
 			pcount--;
 		}
 	}
@@ -407,9 +408,9 @@ void dyn_arm_emulator::step_user()
 		cfs_to_cc();
 		return;
 	}
-	else if(blk_info[ind].count > threshold) 
+	else if(blk_info[ind].count > threshold)
 	{
-		if (blk_info[ind].count != -1u) 
+		if (blk_info[ind].count != -1u)
 		{
 			req_num++;
 			build_andor_load_lib(ind);
@@ -420,7 +421,7 @@ void dyn_arm_emulator::step_user()
 		blk_info[ind].count++;
 
 	inst = fetch_inst_user(get_pc());
-	execute_user(inst, get_pc()); 
+	execute_user(inst, get_pc());
 	icount++;
 }
 
@@ -461,9 +462,9 @@ uint64_t dyn_arm_emulator::run()
 {
 	max_count_set = (max_count != (uint64_t)-1);
 
-	if (user_level) 
+	if (user_level)
 		return run_user();
-	else 
+	else
 		return run_system();
 }
 
@@ -626,7 +627,7 @@ bool dyn_arm_emulator::compile_block(const byte_t *buf, unsigned ind)
 
 	fclose(outfile);
 
-	sprintf(compilestring, 
+	sprintf(compilestring,
 		CXX MORE_OPTION " %s/Xcompiled_%u.cpp"
 		" -Wl,-soname,libXcompiled_%u.so"
 		" -o %s/libXcompiled_%u.so"
@@ -741,21 +742,21 @@ static void emit_ldm_hack(char *buf, arm_inst_t inst)
 			"\tstart_addr = READ_REG(%d) - %d + 4;\n", RNFLD, pcount);
 		if (WFLD)
 			buf += sprintf(buf,
-			"\tWRITE_REG(%d, READ_REG(%d) - %d);\n", RNFLD, RNFLD, pcount); 
-	}														 
-	else {													
+			"\tWRITE_REG(%d, READ_REG(%d) - %d);\n", RNFLD, RNFLD, pcount);
+	}
+	else {
 		buf += sprintf(buf,
 			"\tstart_addr = READ_REG(%d) - %d;\n", RNFLD, pcount);
 		if (WFLD)
-			buf += sprintf(buf,							   
-			"\tWRITE_REG(%d, READ_REG(%d) - %d);\n", RNFLD, RNFLD, pcount); 
+			buf += sprintf(buf,
+			"\tWRITE_REG(%d, READ_REG(%d) - %d);\n", RNFLD, RNFLD, pcount);
 	}
-															  
-	//if (BITn(inst, 15) & BITn(inst, 22))					  
-	//	buf += sprintf(buf, "\tWRITE_CPSR(SPSR);\n");		 
-															  
-	/*ignore the last two bits of the address*/			   
-	buf += sprintf(buf, "\taddress = start_addr & 0xfffffffc;\n");	  
+
+	//if (BITn(inst, 15) & BITn(inst, 22))
+	//	buf += sprintf(buf, "\tWRITE_CPSR(SPSR);\n");
+
+	/*ignore the last two bits of the address*/
+	buf += sprintf(buf, "\taddress = start_addr & 0xfffffffc;\n");
 
 	buf += sprintf(buf,
 	"\tfor (cnt = 0; cnt < %d; cnt++)\n"
@@ -816,21 +817,21 @@ static void emit_stm_hack(char *buf, arm_inst_t inst)
 			"\tstart_addr = READ_REG(%d) - %d + 4;\n", RNFLD, pcount);
 		if (WFLD)
 			buf += sprintf(buf,
-			"\tWRITE_REG(%d, READ_REG(%d) - %d);\n", RNFLD, RNFLD, pcount); 
-	}														 
+			"\tWRITE_REG(%d, READ_REG(%d) - %d);\n", RNFLD, RNFLD, pcount);
+	}
 	else {
 		buf += sprintf(buf,
 			"\tstart_addr = READ_REG(%d) - %d;\n", RNFLD, pcount);
 		if (WFLD)
 			buf += sprintf(buf,
-			"\tWRITE_REG(%d, READ_REG(%d) - %d);\n", RNFLD, RNFLD, pcount); 
+			"\tWRITE_REG(%d, READ_REG(%d) - %d);\n", RNFLD, RNFLD, pcount);
 	}
 
 	//if (BITn(inst, 15) & BITn(inst, 22))
-	//	buf += sprintf(buf, "\tWRITE_CPSR(SPSR);\n");		 
-															  
+	//	buf += sprintf(buf, "\tWRITE_CPSR(SPSR);\n");
+
 	/*ignore the last two bits of the address*/
-	buf += sprintf(buf, "\taddress = start_addr & 0xfffffffc;\n");	  
+	buf += sprintf(buf, "\taddress = start_addr & 0xfffffffc;\n");
 
 	/* translate the address */
 	buf += sprintf(buf,
@@ -861,7 +862,7 @@ void simit::decomp_block(FILE *outfile, const byte_t *pblk,
 
 #if 0
 	fprintf(outfile, "\tif (!(_start_addr >= 0x%x && _start_addr < 0x%x)) {\n"
-			"\t\tfprintf(stderr, \"pc=%%x\\n\", _start_addr);\n\t}\n", 
+			"\t\tfprintf(stderr, \"pc=%%x\\n\", _start_addr);\n\t}\n",
 			fstart, fend);
 	fprintf(outfile, "\tassert(_start_addr >= 0x%x && _start_addr < 0x%x);\n",
 			fstart, fend);
@@ -876,7 +877,7 @@ void simit::decomp_block(FILE *outfile, const byte_t *pblk,
 	fprintf(outfile,
 		"word_t _virt_blk_ind;\n"
 		"word_t _lpc;\n");
-	
+
 	/*label table*/
 	fprintf(outfile,
 		"static void *labels[%u] = {\n\t&&L%x", size/4, 0);
@@ -885,12 +886,12 @@ void simit::decomp_block(FILE *outfile, const byte_t *pblk,
 		fprintf(outfile, ", &&L%x", kk);
 		if ((kk)%16==0) fprintf(outfile, "\n\t");
 	}
-   
+
 	fprintf(outfile, "};\n");
 
 	fprintf(outfile, "#define OFFSET_MASK 0x%x\n", (size - 1));
 	fprintf(outfile, "#define INDEX_MASK 0x%x\n", ~(size - 1));
-	
+
 	//fprintf(outfile,
 	//	"#undef _virt_blk_ind\n"
 	//	"#define _virt_blk_ind 0x%x\n", fstart);
@@ -911,7 +912,7 @@ void simit::decomp_block(FILE *outfile, const byte_t *pblk,
 		DIRECT_READ_WORD(pblk + offset_pc, inst);
 
 		/* if this is nop */
-		if ((inst << 4) == 0 || inst == 0xe1a00000) 
+		if ((inst << 4) == 0 || inst == 0xe1a00000)
 		{
 #ifdef SINGLESTEP // DEBUG
 			fprintf(outfile, "  LONG_JUMP(%uU, %uU);\n",
@@ -920,7 +921,7 @@ void simit::decomp_block(FILE *outfile, const byte_t *pblk,
 #endif
 			continue;
 		}
-		
+
 		fprintf(outfile, "#undef CISS_PC\n");
 		fprintf(outfile, "#define CISS_PC 0x%x\n", offset_pc);
 		fprintf(outfile, "#undef CISS_INST\n");
@@ -999,7 +1000,7 @@ void simit::decomp_block(FILE *outfile, const byte_t *pblk,
 		/* end of instruction */
 	}
 
-	/* print the tail of a function 
+	/* print the tail of a function
 	   print CISS_PC again in case the last instruction is a nop
 	*/
 	fprintf(outfile, "#undef CISS_PC\n");
@@ -1065,7 +1066,7 @@ bool dyn_arm_emulator::read_or_create_dll_dict()
 				close(fd);
 		}
 	}
-	
+
 	if (!ret)
 		fprintf(stderr,
 			"Cannot create dictionary to insufficient permission!\n");
@@ -1094,7 +1095,7 @@ void dyn_arm_emulator::read_dll_dict()
 	while(fscanf(datin, "%u %u", &val1, &val2) != EOF)
 	{
 		DLL_DICT->insert(pair<unsigned, unsigned>(val1, val2));
-		if (val2 >= dll_ind) dll_ind = val2 + 1; 
+		if (val2 >= dll_ind) dll_ind = val2 + 1;
 	}
 
 	fclose(datin);
@@ -1114,7 +1115,7 @@ void dyn_arm_emulator::update_dll_dict(unsigned ind, unsigned crc)
 		return;
 	}
 
-	fprintf(outfile, "%u %u\n", crc, ind); 
+	fprintf(outfile, "%u %u\n", crc, ind);
 	fclose(outfile);
 }
 
@@ -1167,7 +1168,7 @@ bool dyn_arm_emulator::load_lib(unsigned pblk, unsigned ind)
 
 	fptr_t fptr = (fptr_t)dlsym(handle, funname);
 	if ((error = dlerror())!= NULL) {
-		fputs(error, stderr);								
+		fputs(error, stderr);
 		pthread_mutex_unlock(&srv_mut);
 		return false;
 	}
@@ -1283,7 +1284,7 @@ static ssize_t recvall(int fd, void *buf, size_t nbyte)
 void dyn_arm_emulator::com_thread()
 {
 	int my_index = SIMIT_MAX_SERVER;
- 
+
 	unsigned bufsize = 1 << shiftval;
 	byte_t *buf = (byte_t *)malloc(bufsize);
 	if (buf == NULL)
@@ -1296,7 +1297,7 @@ void dyn_arm_emulator::com_thread()
 	/* find one spot that is not in use */
 	for (int ii=0; ii<SIMIT_MAX_SERVER; ii++)
 	{
-		if (srv_dir[ii].buf == NULL) 
+		if (srv_dir[ii].buf == NULL)
 		{
 			my_index = ii;
 			srv_dir[ii].buf = buf;
@@ -1317,7 +1318,7 @@ void dyn_arm_emulator::com_thread()
 		if (showmsg)
 		 fprintf(stderr, "The socket was created %d\n",my_socket);
 
- 
+
 	address.sin_family= AF_INET;
 	address.sin_port = htons(srv_dir[my_index].portno);
 	inet_pton(AF_INET, srv_dir[my_index].ipaddr, &address.sin_addr);
@@ -1353,7 +1354,7 @@ void dyn_arm_emulator::com_thread()
 		if (com_done) break;
 
 		if (showmsg)
-			fprintf(stderr,"start to compile ...\n");	
+			fprintf(stderr,"start to compile ...\n");
 
 		mem->read_block(buf, pblk << shiftval, bufsize);
 
@@ -1399,7 +1400,7 @@ void dyn_arm_emulator::com_thread()
 				fprintf(stderr, "server error encountered...\n");
 			continue;
 		}
-			
+
 		srv_dir[my_index].count++;
 
 		char pkt[1024];
@@ -1451,7 +1452,7 @@ void dyn_arm_emulator::com_thread()
 	if (!com_done)
 	{
 		srv_count--;
- 		if (showmsg)
+		if (showmsg)
 			fprintf(stderr, "Connection reset, thread %d exits.\n", my_index);
 	}
 
@@ -1462,7 +1463,7 @@ void dyn_arm_emulator::com_thread()
 void dyn_arm_emulator::com_thread2()
 {
 	int my_index = SIMIT_MAX_SERVER;
- 
+
 	unsigned bufsize = 1 << shiftval;
 	byte_t *buf = (byte_t *)malloc(bufsize);
 	if (buf == NULL)
@@ -1476,7 +1477,7 @@ void dyn_arm_emulator::com_thread2()
 	for (int ii=0; ii<SIMIT_MAX_SERVER; ii++)
 	{
 		/* donot use entries reserved for remote server */
-		if (srv_dir[ii].buf == NULL && srv_dir[ii].ipaddr[0] == 0) 
+		if (srv_dir[ii].buf == NULL && srv_dir[ii].ipaddr[0] == 0)
 		{
 			my_index = ii;
 			srv_dir[ii].buf = buf;
@@ -1499,7 +1500,7 @@ void dyn_arm_emulator::com_thread2()
 		if (com_done) pthread_exit(NULL);
 
 		if (showmsg)
-			fprintf(stderr,"start to compile ...\n");	
+			fprintf(stderr,"start to compile ...\n");
 
 		mem->read_block(buf, pblk << shiftval, bufsize);
 
@@ -1531,7 +1532,7 @@ void dyn_arm_emulator::com_cleanup()
 {
 	for (int ii=0; ii<SIMIT_MAX_SERVER; ii++)
 	{
-		if (srv_dir[ii].buf) 
+		if (srv_dir[ii].buf)
 		{
 			free(srv_dir[ii].buf);
 			srv_dir[ii].buf = NULL;
@@ -1545,7 +1546,7 @@ int dyn_arm_emulator::read_servers(const char* fname)
 {
 	char buf1[64];
 	int  ii = 0;
-	
+
 	if (fname==NULL) return 0;
 
 	FILE* fp = fopen(fname,"r");
@@ -1603,7 +1604,7 @@ bool dyn_arm_emulator::setup_cache(const char *filename)
 
 	if(hdr == NULL) {
 		fprintf(stderr, "Could not read ELF32 header from file: %s.\n",
-			   	filename);
+				filename);
 		exit(1);
 	}
 
@@ -1630,7 +1631,7 @@ bool dyn_arm_emulator::setup_cache(const char *filename)
 	prog_base = hdr->e_entry;
 
 	shdr = ReadSectionHeaders(hdr, fobj);
-	
+
 	if(shdr == NULL) {
 		fprintf(stderr, "Can't read section headers from executable\n");
 		exit(1);
@@ -1684,4 +1685,3 @@ bool dyn_arm_emulator::setup_cache(const char *filename)
 
 	return true;
 }
-

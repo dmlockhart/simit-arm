@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -37,7 +37,7 @@ BinPattern entry2pattern(DecodeEntry& entry)
 
 		if (!entry.mask.bit_n(ii)) {
 			spat += '-';
-		}	
+		}
 		else if (entry.signature.bit_n(ii)) {
 			spat += '1';
 		}
@@ -45,7 +45,7 @@ BinPattern entry2pattern(DecodeEntry& entry)
 			spat += '0';
 		}
 	}
-		
+
 	return BinPattern(spat);
 }
 
@@ -70,7 +70,7 @@ bool compute_undef(vector<DecodeEntry>& entries)
 
 	list<BinPattern> results;
 	inverse(pats, results);
-	
+
 	// augment the original entries with null ones
 	list<BinPattern>::iterator pat_it;
 	for (pat_it = results.begin(); pat_it!=results.end(); pat_it++) {

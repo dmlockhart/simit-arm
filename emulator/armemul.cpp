@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -20,10 +20,10 @@
 #include <cstring>
 #include "armemul.h"
 #include "armmmu.h"
-#include "arm_io.h" 
-#include "sa_io.h" 
-#include "pxa_io.h" 
-#include "armcopro.h" 
+#include "arm_io.h"
+#include "sa_io.h"
+#include "pxa_io.h"
+#include "armcopro.h"
 #include "decode.h"
 
 using namespace simit;
@@ -100,7 +100,7 @@ arm_emulator::~arm_emulator()
 	if (syscall_buf) {
 		free(syscall_buf);
 	}
-	
+
 }
 
 void arm_emulator::reset()
@@ -117,7 +117,7 @@ void arm_emulator::reset()
 	reset_instruction_counters();
 
 	status = ST_RESET;
-	
+
 	abort_addr = 1;
 
 	if (syscall_buf) {
@@ -135,7 +135,7 @@ bool arm_emulator::cpu_config(const char *cpu_name)
 //	copro[5] =	new copro5(this);
 	copro[15]=	new copro15(this);	//mmu
 	if (strcasecmp(cpu_name, "SA1100") == 0)
-	{ 
+	{
 		io		 =	new sa_io(this);
 		cpu_val  =	SA1100;
 		my_regs.gpr[1] = 109;	/*adsbitsy machine id. */
@@ -148,7 +148,7 @@ bool arm_emulator::cpu_config(const char *cpu_name)
 		my_regs.gpr[1] = 89;    /*lubbock machine id.*/
 		mmu->set_xscale();
 	}
-	else if	(strncasecmp(cpu_name, "PXA27", 5) == 0) 
+	else if	(strncasecmp(cpu_name, "PXA27", 5) == 0)
 	{
 		copro[6] =	new copro6(this);
 		copro[14]=	new copro14(this);
@@ -157,7 +157,7 @@ bool arm_emulator::cpu_config(const char *cpu_name)
 		my_regs.gpr[1] = 406;	/*mainstone machine id. */
 		mmu->set_xscale();
 	}
-	else{ 
+	else{
 		return false;
 	}
 	return true;
@@ -247,7 +247,7 @@ arm_inst_t arm_emulator::fetch_inst_system(arm_addr_t addr)
 {
 	mmu_fault_t fault;
 	word_t inst;
-	
+
 	fault =  mmu->load_instr(addr, &inst);
 	if (fault){
 		abort_addr = addr ;
@@ -287,7 +287,7 @@ void arm_emulator::step_system()
 
 	pcount--;
 
-	inst = fetch_inst_system(get_pc()); 
+	inst = fetch_inst_system(get_pc());
 	execute_system(inst, get_pc());
 
 }
@@ -342,7 +342,7 @@ uint64_t arm_emulator::run()
 
 	if (user_level)
 		return max_count_set?run_user_count():run_user();
-	else 
+	else
 		return run_system();
 }
 
@@ -353,11 +353,11 @@ void arm_emulator::init_registers()
 
 	for (ii = 0; ii < NUM_GPR; ii++)
 		my_regs.gpr[ii] = 0;
-	
+
 	for (ii = 0; ii < 7; ii++)
 		for (jj = 0; jj < 16; jj++)
 			my_regs.reg_bank[ii][jj] = 0;
-	
+
 	mode = SVC_MODE;
 	mode_exception = true;
 	mode_privilege = true;
@@ -379,7 +379,7 @@ cpu_mode_t arm_emulator::translation_mode(cpu_mode_t new_mode)
 	/* mode_exception as a cache for fast checking */
 	mode_exception = ((mode != USR_MODE) && (mode != SYS_MODE));
 	mode_privilege = (mode != USR_MODE);
-	
+
 	/*switch all pages' access permision */
 	mmu->evaluate_access_all();
 	return old_mode;
@@ -444,10 +444,10 @@ void arm_emulator::update_CPSR(word_t val, word_t mask)
 	{
         if (mask&1)
 			result = (result & 0xFFFFFF00) | (val & 0x000000FF);
-		
+
 		if (mask&2)
 			result = (result & 0xFFFF00FF) | (val & 0x0000FF00);
-		
+
 		if (mask&4)
 			result = (result & 0xFF00FFFF) | (val & 0x00FF0000);
     }
@@ -462,22 +462,22 @@ void arm_emulator::update_SPSR(word_t val, word_t mask)
 {
     uint32_t result;
 
-    if (!user_level && mode_exception) 
+    if (!user_level && mode_exception)
 	{
-    	result = read_spsr();
+	result = read_spsr();
 
         if (mask&1)
 			result = (result & 0xFFFFFF00) | (val & 0x000000FF);
-		
+
 		if (mask&2)
 			result = (result & 0xFFFF00FF) | (val & 0x0000FF00);
-		
+
 		if (mask&4)
 			result = (result & 0xFF00FFFF) | (val & 0x00FF0000);
-		
+
 		if (mask&8)
 			result = (result & 0x00FFFFFF) | (val & 0xFF000000);
 
 		write_spsr(result);
     }
-} 
+}

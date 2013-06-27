@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -37,13 +37,13 @@ static void usage(char *fname)
   char *cp;
 	if ((cp = strrchr(fname, '/'))!=NULL) cp++;
 	else cp = fname;
-	fprintf(stderr, 
+	fprintf(stderr,
 		"usage : %s [-v] [-p portnum] [-h]\n"
 		"  -v : verbose mode\n"
 		"  -p : port number\n"
 		"  -n : no linking\n"
 		"  -h : print this message and quit\n", cp);
- 
+
 }
 
 static char temp_path[] = "/tmp/dcmpXXXXXX";
@@ -82,24 +82,24 @@ int main(int argc, char *argv[], char *envp[])
 		{usage(argv[0]); return 0;}
 	}
 
-	if ((bin_name = strrchr(argv[0], '/'))!=NULL) bin_name++; 
+	if ((bin_name = strrchr(argv[0], '/'))!=NULL) bin_name++;
 	else bin_name = argv[0];
 
 	// create a new simulator object
 	decomp_server *ds = new decomp_server(verbose, portnum, linking);
-       
+
 #if HAVE_SYS_RESOURCE_H && HAVE_SYS_TIME_H
 	struct timeval begin_u, end_u, begin_s, end_s,
-			cbegin_u, cend_u, cbegin_s, cend_s;    
-	struct rusage usg, cusg;                                
-	float sim_user_time, sim_sys_time, child_user_time, child_sys_time;                        
-	getrusage(RUSAGE_SELF, &usg);                     
-	getrusage(RUSAGE_CHILDREN, &cusg);                     
-	begin_u = usg.ru_utime;                           
-	cbegin_u = cusg.ru_utime;                           
+			cbegin_u, cend_u, cbegin_s, cend_s;
+	struct rusage usg, cusg;
+	float sim_user_time, sim_sys_time, child_user_time, child_sys_time;
+	getrusage(RUSAGE_SELF, &usg);
+	getrusage(RUSAGE_CHILDREN, &cusg);
+	begin_u = usg.ru_utime;
+	cbegin_u = cusg.ru_utime;
 	begin_s = usg.ru_stime;
 	cbegin_s = cusg.ru_stime;
-#endif 
+#endif
 
 	if (mkdtemp(temp_path)==NULL) {
 		perror("Cannot open temporary folder");
@@ -117,20 +117,20 @@ int main(int argc, char *argv[], char *envp[])
 
 #if HAVE_SYS_RESOURCE_H && HAVE_SYS_TIME_H
 	getrusage(RUSAGE_SELF, &usg);
-	getrusage(RUSAGE_CHILDREN, &cusg);                     
+	getrusage(RUSAGE_CHILDREN, &cusg);
 	end_u = usg.ru_utime;
-	cend_u = cusg.ru_utime;                             
+	cend_u = cusg.ru_utime;
 	end_s = usg.ru_stime;
 	cend_s = cusg.ru_stime;
 	sim_user_time = (end_u.tv_sec+end_u.tv_usec/1000000.0)-
-		(begin_u.tv_sec+begin_u.tv_usec/1000000.0);   
+		(begin_u.tv_sec+begin_u.tv_usec/1000000.0);
 	sim_sys_time = (end_s.tv_sec+end_s.tv_usec/1000000.0)-
 		(begin_s.tv_sec+begin_s.tv_usec/1000000.0);
 	child_user_time = (cend_u.tv_sec+cend_u.tv_usec/1000000.0)-
-		(cbegin_u.tv_sec+cbegin_u.tv_usec/1000000.0);   
+		(cbegin_u.tv_sec+cbegin_u.tv_usec/1000000.0);
 	child_sys_time = (cend_s.tv_sec+cend_s.tv_usec/1000000.0)-
 		(cbegin_s.tv_sec+cbegin_s.tv_usec/1000000.0);
-	fprintf(stderr, "Total user time  : %.3f sec.\n"  
+	fprintf(stderr, "Total user time  : %.3f sec.\n"
 		"Total system time: %.3f sec.\n",
 		child_user_time+sim_user_time, child_sys_time+sim_sys_time);
 #endif

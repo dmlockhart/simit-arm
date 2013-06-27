@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -36,7 +36,7 @@ static void usage(char *fname)
 	char *cp;
 	if ((cp = strrchr(fname, '/'))!=NULL) cp++;
 	else cp = fname;
-	fprintf(stderr, 
+	fprintf(stderr,
 		"**** " PACKAGE " Version " VERSION
 		" (C) 2002-2007 Wei Qin ****\n"
 		"usage : %s [-h] [-d] [-v] [-m num] [-s config] "
@@ -78,8 +78,8 @@ static void setup_signals()
 {
 	struct sigaction act;
 
-	memset(&act, 0, sizeof(act));                             
-	act.sa_handler = sig_handler;                        
+	memset(&act, 0, sizeof(act));
+	act.sa_handler = sig_handler;
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGTERM, &act, NULL);
 }
@@ -88,8 +88,8 @@ static void clear_signals()
 {
 	struct sigaction act;
 
-	memset(&act, 0, sizeof(act));                             
-	act.sa_handler = SIG_DFL;                        
+	memset(&act, 0, sizeof(act));
+	act.sa_handler = SIG_DFL;
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGTERM, &act, NULL);
 }
@@ -117,11 +117,11 @@ int main(int argc, char *argv[], char *envp[])
 		{
 			prog_name = argv[i];
 			break;
-		}	
+		}
 	}
 
 	usr_level = conf_name==NULL;
-	
+
 	/* get the basename of myself, for printing messages */
 	if ((bin_name = strrchr(argv[0], '/'))!=NULL) bin_name++;
 	else bin_name = argv[0];
@@ -161,7 +161,7 @@ int main(int argc, char *argv[], char *envp[])
 			fprintf(stderr, "%s: Simulation starts ...\n", bin_name);
 
 #if HAVE_SYS_RESOURCE_H && HAVE_SYS_TIME_H
-	
+
 			struct timeval begin_u, end_u, begin_s, end_s;
 			struct rusage usg;
 			float user_time, sys_time;
@@ -178,7 +178,7 @@ int main(int argc, char *argv[], char *envp[])
 			if (!usr_level) term_init();
 
 			icount = ema->run();
-			
+
 #if HAVE_SYS_RESOURCE_H && HAVE_SYS_TIME_H
 			getrusage(RUSAGE_SELF, &usg);
 			end_u = usg.ru_utime;

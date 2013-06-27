@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -35,7 +35,7 @@ void dump_int64(uint64_t value, FILE *stream)
 {
 	char buffer[32];
 	char *p = buffer + sizeof(buffer) - 1;
-	
+
 	if (value==0) {
 		fputs("0", stream);
 	}
@@ -96,19 +96,18 @@ void term_init(void)
     tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP
                           |INLCR|IGNCR|ICRNL|IXON);
     tty.c_oflag |= OPOST;
-	tty.c_lflag &= ~(ECHO|ECHONL|ICANON|IEXTEN);
-	
-	tty.c_lflag &= ~ISIG;
+    tty.c_lflag &= ~(ECHO|ECHONL|ICANON|IEXTEN);
+
+    tty.c_lflag &= ~ISIG;
 
     tty.c_cflag &= ~(CSIZE|PARENB);
     tty.c_cflag |= CS8;
     tty.c_cc[VMIN] = 1;
     tty.c_cc[VTIME] = 0;
-    
+
     tcsetattr (0, TCSANOW, &tty);
 
     atexit(term_exit);
 
     fcntl(0, F_SETFL, O_NONBLOCK);
 }
-

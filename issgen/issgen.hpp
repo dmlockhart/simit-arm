@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -157,7 +157,7 @@ class token {
 
 	token(const char *str, TOKEN_T type) : data(str), type(type) {}
 
-	~token() {};	
+	~token() {};
 
 	const char *get_data() const {return data;}
 	TOKEN_T get_type() const {return type;}
@@ -233,7 +233,7 @@ class oper_base {
 	bool checked;	// type-check has been called
 	bool incheck;	// being type-checked, to detect cycles
 	unsigned width;	// width of encoding
-	unsigned count;	// number of options 
+	unsigned count;	// number of options
 
 };
 
@@ -241,9 +241,9 @@ class oper_base {
 class oper : public oper_base {
 
   public:
- 
+
 	// constructor
-	oper(const Symbol& name, std::vector<class bin_code *> *pat, 
+	oper(const Symbol& name, std::vector<class bin_code *> *pat,
 		OP_CON_ENV *contents) :
 		oper_base(name), pat(pat), contents(contents) {}
 
@@ -375,7 +375,7 @@ class isa_prog {
 	void emit_codegenerator(std::ofstream&);
 	void emit_codegenerator_dec(std::ofstream&);
 
-	
+
 	~isa_prog();
 
   private:

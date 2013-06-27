@@ -193,18 +193,18 @@ void sa_io::refresh_irq ()
 
 	if ((rtsr & 0x2) && (rtsr & 0x8))
 		irq |= RTC_HZ_IRQ;
-	
-		
+
+
 	/*OS time */
 	mask = oier & ossr;
 	irq |= (mask << OS_IRQ_SHF);
-	
+
 
 	/*UART3 */
 	if ((utcr3 & 0x8) && (utsr0 & 0x6))
 		irq |= UART3_IRQ;
-	
-	
+
+
 	if (utsr0 & 0x38)
 		irq |= UART3_IRQ;
 
@@ -224,7 +224,7 @@ memory_fault_t sa_io::read_word(target_addr_t addr, word_t *p)
 	word_t data;
 
 	switch (addr) {
-	 /*RTC*/ 
+	 /*RTC*/
 	case RCNR:
 		data = rcnr;
 		break;
@@ -311,7 +311,7 @@ memory_fault_t sa_io::read_word(target_addr_t addr, word_t *p)
 
 	default:
 		data = 0;
-		break;	
+		break;
 	};
 
 	*p = data;
@@ -321,7 +321,7 @@ memory_fault_t sa_io::read_word(target_addr_t addr, word_t *p)
 memory_fault_t sa_io::write_word(target_addr_t addr, word_t data)
 {
 	switch (addr) {
-	 /*RTC*/ 
+	 /*RTC*/
 	case RCNR:
 		rcnr = data;
 		break;
@@ -398,7 +398,7 @@ memory_fault_t sa_io::write_word(target_addr_t addr, word_t data)
 		break;
 	case PMCR: // sleep mode == power off
 	case RSRR: // power off
-		if (data & 1) 
+		if (data & 1)
 			emu->raise_reset_signal();
 		break;
 	default:
@@ -406,4 +406,3 @@ memory_fault_t sa_io::write_word(target_addr_t addr, word_t data)
 	}
 	return MEM_NO_FAULT;
 }
-

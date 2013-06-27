@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,6 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 #ifndef SIMIT_DYN_ARM_EMUL_H
 #define SIMIT_DYN_ARM_EMUL_H
 
@@ -33,7 +34,7 @@ class dyn_arm_emulator: public arm_emulator {
 	 * showmsg    -- print compilation messages
 	 * user_level -- perform user level simulation
 	 * threshold  -- threshold to trigger compilation
-	 * blkbits    -- log2 of block byte size 
+	 * blkbits    -- log2 of block byte size
 	 */
 	dyn_arm_emulator(bool verbose, bool showmsg, bool user_level,
 			uint32_t threshold, uint32_t blkbits);
@@ -117,7 +118,7 @@ class dyn_arm_emulator: public arm_emulator {
 	/* get the total count of compilation requests that hits in cache */
 	unsigned get_num_hits() const {return hit_num;}
 
-	/* load cached DLLs for the program, 
+	/* load cached DLLs for the program,
 	 * return false on failure to access/create the cache dir
 	 */
 	bool setup_cache(const char *progname);
@@ -188,7 +189,7 @@ class dyn_arm_emulator: public arm_emulator {
 	unsigned hit_num;		// total number that hit in the DLL cache
 	unsigned dll_ind;		// dll file name index, always grows
 
-	char *cache_dir;	
+	char *cache_dir;
 
 	/* use void * insteand of std::list so that <list> does not need
 	 * to be included here. Including list will slow down the compilation
@@ -255,7 +256,7 @@ class dyn_arm_emulator: public arm_emulator {
 	byte_t *temp_buf1;
 	byte_t *temp_buf2;
 };
-    
+
 /* translate a block, buf is holds the instructions
  * ind is the index of the DLL file.
  * this function is made public so that the translation server

@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -12,7 +12,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 *************************************************************************/
+
 #include "arch.hpp"
+
 void SIMIT_IMP(movi_imm_mode1_) (emulator_t *emu, target_inst_t inst)
 {
 
@@ -252,7 +254,7 @@ void SIMIT_IMP(movs_lsz_mode2_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (carry=C_FLAG, READ_REG(rm));
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -274,7 +276,7 @@ void SIMIT_IMP(movs_lsl_mode2_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (val32=READ_REG(rm), carry=BITn(val32, 32-shift_imm), val32<<shift_imm);
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -294,7 +296,7 @@ void SIMIT_IMP(movs_zero_mode2_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (carry=BIT31(READ_REG(rm)), 0);
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -316,7 +318,7 @@ void SIMIT_IMP(movs_lsr_mode2_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (val32=READ_REG(rm), carry=BITn(val32, shift_imm-1), val32>>shift_imm);
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -337,7 +339,7 @@ void SIMIT_IMP(movs_sign_mode2_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (val32=READ_REG(rm), carry=BIT31(val32), BIT31(val32)?~0:0);
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -359,7 +361,7 @@ void SIMIT_IMP(movs_asr_mode2_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (val32=READ_REG(rm), carry=BITn(val32, shift_imm-1), (int32_t)val32>>shift_imm);
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -380,7 +382,7 @@ void SIMIT_IMP(movs_rrx_mode2_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (val32=READ_REG(rm), carry=BIT0(val32), (val32>>1)|(C_FLAG<<31));
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -402,7 +404,7 @@ void SIMIT_IMP(movs_ror_mode2_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (val32=READ_REG(rm), carry=BITn(val32, shift_imm-1), (val32>>shift_imm)|(val32<<(32-shift_imm)));
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -425,7 +427,7 @@ void SIMIT_IMP(movs_lsl_mode3_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (tmp32=READ_REG(rs)&0xFF, val32=READ_REG(rm), carry=(tmp32==0)?C_FLAG:((tmp32>32)?0:BITn(val32,32-val32)), (tmp32<32)?(val32<<tmp32):0);
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -448,7 +450,7 @@ void SIMIT_IMP(movs_lsr_mode3_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (tmp32=READ_REG(rs)&0xFF, val32=READ_REG(rm), carry=(tmp32==0)?C_FLAG:((tmp32>32)?0:BITn(val32,tmp32-1)), (tmp32<32)?(val32>>tmp32):0);
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -471,7 +473,7 @@ void SIMIT_IMP(movs_asr_mode3_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (tmp32=READ_REG(rs)&0xFF, val32=READ_REG(rm), carry=(tmp32==0)?C_FLAG:((tmp32>31)?BIT31(val32):BITn(val32,tmp32-1)), (int32_t)val32>>(tmp32<32?tmp32:31));
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -494,7 +496,7 @@ void SIMIT_IMP(movs_ror_mode3_s_) (emulator_t *emu, target_inst_t inst)
 
 	rslt32 = (tmp32=READ_REG(rs)&0xFF, val32=READ_REG(rm), carry=(tmp32==0)?C_FLAG:((tmp32&0x1f==0)?BIT31(val32):BITn(val32,(tmp32&0x1f)-1)), (val32>>(tmp32&0x1f))|(val32<<(32-(tmp32&0x1f))));
 	if (rd==15)
-    	WRITE_CPSR(SPSR);
+	WRITE_CPSR(SPSR);
 	else
 		ASGN_NZC(rslt32, carry);
 	WRITE_REG(rd, rslt32);
@@ -7782,7 +7784,7 @@ void SIMIT_IMP(ldt_imm_) (emulator_t *emu, target_inst_t inst)
 
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_WORD(address,&rslt32);
 	TRANSLATION_MODE(current_mode);
 
@@ -7816,7 +7818,7 @@ void SIMIT_IMP(ldt_imm_b_) (emulator_t *emu, target_inst_t inst)
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
 
-			
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -8097,7 +8099,7 @@ void SIMIT_IMP(ldt_reg_b_lsl_mode2_) (emulator_t *emu, target_inst_t inst)
 	offset = (READ_REG(rm)<<shift_imm);
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -8127,7 +8129,7 @@ void SIMIT_IMP(ldt_reg_b_zero_mode2_) (emulator_t *emu, target_inst_t inst)
 	offset = 0;
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -8159,7 +8161,7 @@ void SIMIT_IMP(ldt_reg_b_lsr_mode2_) (emulator_t *emu, target_inst_t inst)
 	offset = (READ_REG(rm)>>shift_imm);
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -8190,7 +8192,7 @@ void SIMIT_IMP(ldt_reg_b_sign_mode2_) (emulator_t *emu, target_inst_t inst)
 	offset = (BIT31(READ_REG(rm))?~0:0);
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -8222,7 +8224,7 @@ void SIMIT_IMP(ldt_reg_b_asr_mode2_) (emulator_t *emu, target_inst_t inst)
 	offset = ((int32_t)(READ_REG(rm))>>shift_imm);
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -8253,7 +8255,7 @@ void SIMIT_IMP(ldt_reg_b_rrx_mode2_) (emulator_t *emu, target_inst_t inst)
 	offset = ((READ_REG(rm)>>1)|(C_FLAG<<31));
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -8286,7 +8288,7 @@ void SIMIT_IMP(ldt_reg_b_ror_mode2_) (emulator_t *emu, target_inst_t inst)
 	offset = (val32=READ_REG(rm), (val32>>shift_imm)|(val32<<(32-shift_imm)));
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	TRANSLATION_MODE(current_mode);
 
@@ -8877,7 +8879,7 @@ void SIMIT_IMP(ld1_reg_b_lsl_mode2_) (emulator_t *emu, target_inst_t inst)
 
 	offset = (READ_REG(rm)<<shift_imm);
 	address = READ_REG(rn);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -8903,7 +8905,7 @@ void SIMIT_IMP(ld1_reg_b_zero_mode2_) (emulator_t *emu, target_inst_t inst)
 
 	offset = 0;
 	address = READ_REG(rn);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -8931,7 +8933,7 @@ void SIMIT_IMP(ld1_reg_b_lsr_mode2_) (emulator_t *emu, target_inst_t inst)
 
 	offset = (READ_REG(rm)>>shift_imm);
 	address = READ_REG(rn);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -8958,7 +8960,7 @@ void SIMIT_IMP(ld1_reg_b_sign_mode2_) (emulator_t *emu, target_inst_t inst)
 
 	offset = (BIT31(READ_REG(rm))?~0:0);
 	address = READ_REG(rn);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -8986,7 +8988,7 @@ void SIMIT_IMP(ld1_reg_b_asr_mode2_) (emulator_t *emu, target_inst_t inst)
 
 	offset = ((int32_t)(READ_REG(rm))>>shift_imm);
 	address = READ_REG(rn);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -9013,7 +9015,7 @@ void SIMIT_IMP(ld1_reg_b_rrx_mode2_) (emulator_t *emu, target_inst_t inst)
 
 	offset = ((READ_REG(rm)>>1)|(C_FLAG<<31));
 	address = READ_REG(rn);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -9042,7 +9044,7 @@ void SIMIT_IMP(ld1_reg_b_ror_mode2_) (emulator_t *emu, target_inst_t inst)
 
 	offset = (val32=READ_REG(rm), (val32>>shift_imm)|(val32<<(32-shift_imm)));
 	address = READ_REG(rn);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -9338,7 +9340,7 @@ void SIMIT_IMP(ld2_imm_s_) (emulator_t *emu, target_inst_t inst)
 	offset = (imm4_1 << 4) | imm4_2;
 
 	address = READ_REG(rn);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -9515,7 +9517,7 @@ void SIMIT_IMP(ld2_reg_s_) (emulator_t *emu, target_inst_t inst)
 
 	offset = READ_REG(rm);
 	address = READ_REG(rn);
-	
+
 	MMU_READ_BYTE(address,&rslt8);
 	if(fault){
 		ABORT( DataAbortV );
@@ -9654,7 +9656,7 @@ void SIMIT_IMP(stt_imm_b_) (emulator_t *emu, target_inst_t inst)
 
 	address = READ_REG(rn);
 	current_mode = TRANSLATION_MODE(USR_MODE);
-	
+
 	MMU_WRITE_BYTE(address, READ_REG(rd));
 	TRANSLATION_MODE(current_mode);
 
@@ -10937,7 +10939,7 @@ void SIMIT_IMP(st2_imm_) (emulator_t *emu, target_inst_t inst)
 	address = READ_REG(rn);
 
 	MMU_WRITE_HALF_WORD(address, READ_REG(rd));
-	
+
 	if (fault){
 		ABORT( DataAbortV );
 	}
@@ -10993,7 +10995,7 @@ void SIMIT_IMP(st2_reg_) (emulator_t *emu, target_inst_t inst)
 	address = READ_REG(rn);
 
 	MMU_WRITE_HALF_WORD(address, READ_REG(rd));
-	
+
 	if (fault){
 		ABORT( DataAbortV );
 	}
@@ -11100,12 +11102,12 @@ void SIMIT_IMP(ldm1_ldm1_000_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask)*4;
-	
-	
+
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
-	
+
 	address = start_addr-(start_addr&0x3);
 	iterator = rmo16(reg_mask);
 	while (iterator<16) {
@@ -11142,13 +11144,13 @@ void SIMIT_IMP(ldm1_ldm1_001_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask)*4;
-	
-	
+
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 	WRITE_REG(rn, base_addr - pcount);
 
-	
+
 	address = start_addr-(start_addr&0x3);
 	iterator = rmo16(reg_mask);
 	while (iterator<16) {
@@ -11185,12 +11187,12 @@ void SIMIT_IMP(ldm1_ldm1_010_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask)*4;
-	
-	
+
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
-	
+
 	address = start_addr-(start_addr&0x3);
 	iterator = rmo16(reg_mask);
 	while (iterator<16) {
@@ -11227,13 +11229,13 @@ void SIMIT_IMP(ldm1_ldm1_011_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask)*4;
-	
-	
+
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 	WRITE_REG(rn, base_addr + pcount);
 
-	
+
 	address = start_addr-(start_addr&0x3);
 	iterator = rmo16(reg_mask);
 	while (iterator<16) {
@@ -11270,12 +11272,12 @@ void SIMIT_IMP(ldm1_ldm1_100_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask)*4;
-	
-	
+
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
-	
+
 	address = start_addr-(start_addr&0x3);
 	iterator = rmo16(reg_mask);
 	while (iterator<16) {
@@ -11312,13 +11314,13 @@ void SIMIT_IMP(ldm1_ldm1_101_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask)*4;
-	
-	
+
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 	WRITE_REG(rn, base_addr - pcount);
 
-	
+
 	address = start_addr-(start_addr&0x3);
 	iterator = rmo16(reg_mask);
 	while (iterator<16) {
@@ -11355,12 +11357,12 @@ void SIMIT_IMP(ldm1_ldm1_110_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask)*4;
-	
-	
+
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
-	
+
 	address = start_addr-(start_addr&0x3);
 	iterator = rmo16(reg_mask);
 	while (iterator<16) {
@@ -11397,13 +11399,13 @@ void SIMIT_IMP(ldm1_ldm1_111_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask)*4;
-	
-	
+
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 	WRITE_REG(rn, base_addr + pcount);
 
-	
+
 	address = start_addr-(start_addr&0x3);
 	iterator = rmo16(reg_mask);
 	while (iterator<16) {
@@ -11441,14 +11443,14 @@ void SIMIT_IMP(ldm2_ldm2_000_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
 
 	address = start_addr-(start_addr&0x3);
 	current_mode = CPU_MODE;
-	SWITCH_BANK(current_mode,USR_MODE);	
+	SWITCH_BANK(current_mode,USR_MODE);
 
 	iterator = rmo16(reg_mask2);
 	while (iterator<15) {
@@ -11466,7 +11468,7 @@ void SIMIT_IMP(ldm2_ldm2_000_) (emulator_t *emu, target_inst_t inst)
 		iterator++;
 	}
 
-	SWITCH_BANK(USR_MODE,current_mode);	
+	SWITCH_BANK(USR_MODE,current_mode);
 
 
 
@@ -11489,14 +11491,14 @@ void SIMIT_IMP(ldm2_ldm2_010_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
 
 	address = start_addr-(start_addr&0x3);
 	current_mode = CPU_MODE;
-	SWITCH_BANK(current_mode,USR_MODE);	
+	SWITCH_BANK(current_mode,USR_MODE);
 
 	iterator = rmo16(reg_mask2);
 	while (iterator<15) {
@@ -11514,7 +11516,7 @@ void SIMIT_IMP(ldm2_ldm2_010_) (emulator_t *emu, target_inst_t inst)
 		iterator++;
 	}
 
-	SWITCH_BANK(USR_MODE,current_mode);	
+	SWITCH_BANK(USR_MODE,current_mode);
 
 
 
@@ -11537,14 +11539,14 @@ void SIMIT_IMP(ldm2_ldm2_100_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
 
 	address = start_addr-(start_addr&0x3);
 	current_mode = CPU_MODE;
-	SWITCH_BANK(current_mode,USR_MODE);	
+	SWITCH_BANK(current_mode,USR_MODE);
 
 	iterator = rmo16(reg_mask2);
 	while (iterator<15) {
@@ -11562,7 +11564,7 @@ void SIMIT_IMP(ldm2_ldm2_100_) (emulator_t *emu, target_inst_t inst)
 		iterator++;
 	}
 
-	SWITCH_BANK(USR_MODE,current_mode);	
+	SWITCH_BANK(USR_MODE,current_mode);
 
 
 
@@ -11585,14 +11587,14 @@ void SIMIT_IMP(ldm2_ldm2_110_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
 
 	address = start_addr-(start_addr&0x3);
 	current_mode = CPU_MODE;
-	SWITCH_BANK(current_mode,USR_MODE);	
+	SWITCH_BANK(current_mode,USR_MODE);
 
 	iterator = rmo16(reg_mask2);
 	while (iterator<15) {
@@ -11610,7 +11612,7 @@ void SIMIT_IMP(ldm2_ldm2_110_) (emulator_t *emu, target_inst_t inst)
 		iterator++;
 	}
 
-	SWITCH_BANK(USR_MODE,current_mode);	
+	SWITCH_BANK(USR_MODE,current_mode);
 
 
 
@@ -11633,8 +11635,8 @@ void SIMIT_IMP(ldm3_ldm3_000_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
 
@@ -11686,8 +11688,8 @@ void SIMIT_IMP(ldm3_ldm3_001_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 	WRITE_REG(rn, base_addr - pcount);
 
@@ -11740,8 +11742,8 @@ void SIMIT_IMP(ldm3_ldm3_010_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
 
@@ -11793,8 +11795,8 @@ void SIMIT_IMP(ldm3_ldm3_011_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 	WRITE_REG(rn, base_addr + pcount);
 
@@ -11847,8 +11849,8 @@ void SIMIT_IMP(ldm3_ldm3_100_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
 
@@ -11900,8 +11902,8 @@ void SIMIT_IMP(ldm3_ldm3_101_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 	WRITE_REG(rn, base_addr - pcount);
 
@@ -11954,8 +11956,8 @@ void SIMIT_IMP(ldm3_ldm3_110_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
 
@@ -12007,8 +12009,8 @@ void SIMIT_IMP(ldm3_ldm3_111_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-	
-	base_addr = READ_REG(rn);	
+
+	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 	WRITE_REG(rn, base_addr + pcount);
 
@@ -12060,7 +12062,7 @@ void SIMIT_IMP(stm1_stm1_000_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
@@ -12103,7 +12105,7 @@ void SIMIT_IMP(stm1_stm1_001_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 	WRITE_REG(rn, base_addr - pcount);
@@ -12147,7 +12149,7 @@ void SIMIT_IMP(stm1_stm1_010_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
@@ -12190,7 +12192,7 @@ void SIMIT_IMP(stm1_stm1_011_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 	WRITE_REG(rn, base_addr + pcount);
@@ -12234,7 +12236,7 @@ void SIMIT_IMP(stm1_stm1_100_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
@@ -12277,7 +12279,7 @@ void SIMIT_IMP(stm1_stm1_101_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 	WRITE_REG(rn, base_addr - pcount);
@@ -12321,7 +12323,7 @@ void SIMIT_IMP(stm1_stm1_110_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
@@ -12364,7 +12366,7 @@ void SIMIT_IMP(stm1_stm1_111_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 	WRITE_REG(rn, base_addr + pcount);
@@ -12409,7 +12411,7 @@ void SIMIT_IMP(stm2_stm2_000_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
@@ -12457,7 +12459,7 @@ void SIMIT_IMP(stm2_stm2_010_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
@@ -12505,7 +12507,7 @@ void SIMIT_IMP(stm2_stm2_100_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
@@ -12553,7 +12555,7 @@ void SIMIT_IMP(stm2_stm2_110_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-	
+
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
@@ -12759,7 +12761,7 @@ void SIMIT_IMP(cdp_) (emulator_t *emu, target_inst_t inst)
 	uint32_t cpab;
 
 
-		
+
 	if (emu->copro[cp_num] == NULL){
 		ABORT2(UndefinedInstrV);
 	}
@@ -12768,7 +12770,7 @@ void SIMIT_IMP(cdp_) (emulator_t *emu, target_inst_t inst)
 		ABORT2(UndefinedInstrV);
 	}
 
-	
+
 	cpab = emu->copro[cp_num]->CDP(ARMul_FIRST, inst);
 	while (cpab == ARMul_BUSY) {
 		if (emu->int_pending ()) {
@@ -12804,7 +12806,7 @@ void SIMIT_IMP(mcr_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->MCR(ARMul_FIRST, inst, READ_REG(rd));
 
 	while (cpab == ARMul_BUSY) {
@@ -12831,7 +12833,7 @@ void SIMIT_IMP(mrc_) (emulator_t *emu, target_inst_t inst)
 	uint32_t val32;
 	uint32_t cpab;
 
-	
+
 	if (emu->copro[cp_num] == NULL){
 		ABORT2(UndefinedInstrV);
 	}
@@ -12839,7 +12841,7 @@ void SIMIT_IMP(mrc_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->MRC(ARMul_FIRST, inst, &val32);
 
 	while (cpab == ARMul_BUSY) {
@@ -12853,7 +12855,7 @@ void SIMIT_IMP(mrc_) (emulator_t *emu, target_inst_t inst)
 	if (cpab == ARMul_CANT){
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	if (rd  == 15) {
 		ASGN_N ((val32 & (1<<31)) != 0);
 		ASGN_Z ((val32 & (1<<30)) != 0);
@@ -12882,7 +12884,7 @@ void SIMIT_IMP(ldc1_ldc1_01_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-	
+
 	address = READ_REG(rn);
 ;
 
@@ -12893,7 +12895,7 @@ void SIMIT_IMP(ldc1_ldc1_01_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->LDC(ARMul_FIRST, inst, 0);
 
 	while (cpab == ARMul_BUSY) {
@@ -12943,7 +12945,7 @@ void SIMIT_IMP(ldc1_ldc1_10_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-	
+
 	address = READ_REG(rn) - (offset << 2);
 ;
 
@@ -12954,7 +12956,7 @@ void SIMIT_IMP(ldc1_ldc1_10_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->LDC(ARMul_FIRST, inst, 0);
 
 	while (cpab == ARMul_BUSY) {
@@ -13004,7 +13006,7 @@ void SIMIT_IMP(ldc1_ldc1_11_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-	
+
 	address = READ_REG(rn) + (offset << 2);
 ;
 
@@ -13015,7 +13017,7 @@ void SIMIT_IMP(ldc1_ldc1_11_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->LDC(ARMul_FIRST, inst, 0);
 
 	while (cpab == ARMul_BUSY) {
@@ -13068,7 +13070,7 @@ void SIMIT_IMP(ldc2_ldc2_00_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-	
+
 	start_addr = base_addr;
 	address = base_addr - (offset << 2);
 ;
@@ -13080,7 +13082,7 @@ void SIMIT_IMP(ldc2_ldc2_00_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->LDC(ARMul_FIRST, inst, 0);
 
 	while (cpab == ARMul_BUSY) {
@@ -13102,7 +13104,7 @@ void SIMIT_IMP(ldc2_ldc2_00_) (emulator_t *emu, target_inst_t inst)
 		WRITE_REG(rn, base_addr);
 		ABORT( DataAbortV );
 	}
-	
+
 	address = start_addr;
 	cpab = emu->copro[cp_num]->LDC(ARMul_DATA, inst, rslt32);
 
@@ -13137,7 +13139,7 @@ void SIMIT_IMP(ldc2_ldc2_01_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-	
+
 	start_addr = base_addr;
 	address = base_addr + (offset << 2);
 ;
@@ -13149,7 +13151,7 @@ void SIMIT_IMP(ldc2_ldc2_01_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->LDC(ARMul_FIRST, inst, 0);
 
 	while (cpab == ARMul_BUSY) {
@@ -13171,7 +13173,7 @@ void SIMIT_IMP(ldc2_ldc2_01_) (emulator_t *emu, target_inst_t inst)
 		WRITE_REG(rn, base_addr);
 		ABORT( DataAbortV );
 	}
-	
+
 	address = start_addr;
 	cpab = emu->copro[cp_num]->LDC(ARMul_DATA, inst, rslt32);
 
@@ -13206,7 +13208,7 @@ void SIMIT_IMP(ldc2_ldc2_10_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-	
+
 	start_addr = address = base_addr - (offset << 2);
 ;
 
@@ -13217,7 +13219,7 @@ void SIMIT_IMP(ldc2_ldc2_10_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->LDC(ARMul_FIRST, inst, 0);
 
 	while (cpab == ARMul_BUSY) {
@@ -13239,7 +13241,7 @@ void SIMIT_IMP(ldc2_ldc2_10_) (emulator_t *emu, target_inst_t inst)
 		WRITE_REG(rn, base_addr);
 		ABORT( DataAbortV );
 	}
-	
+
 	address = start_addr;
 	cpab = emu->copro[cp_num]->LDC(ARMul_DATA, inst, rslt32);
 
@@ -13274,7 +13276,7 @@ void SIMIT_IMP(ldc2_ldc2_11_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-	
+
 	start_addr = address = base_addr + (offset << 2);
 ;
 
@@ -13285,7 +13287,7 @@ void SIMIT_IMP(ldc2_ldc2_11_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->LDC(ARMul_FIRST, inst, 0);
 
 	while (cpab == ARMul_BUSY) {
@@ -13307,7 +13309,7 @@ void SIMIT_IMP(ldc2_ldc2_11_) (emulator_t *emu, target_inst_t inst)
 		WRITE_REG(rn, base_addr);
 		ABORT( DataAbortV );
 	}
-	
+
 	address = start_addr;
 	cpab = emu->copro[cp_num]->LDC(ARMul_DATA, inst, rslt32);
 
@@ -13339,7 +13341,7 @@ void SIMIT_IMP(stc1_stc1_01_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-	
+
 	address = READ_REG(rn);
 ;
 
@@ -13350,7 +13352,7 @@ void SIMIT_IMP(stc1_stc1_01_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->STC(ARMul_FIRST, inst, &rslt32);
 
 	while (cpab == ARMul_BUSY) {
@@ -13397,7 +13399,7 @@ void SIMIT_IMP(stc1_stc1_10_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-	
+
 	address = READ_REG(rn) - (offset << 2);
 ;
 
@@ -13408,7 +13410,7 @@ void SIMIT_IMP(stc1_stc1_10_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->STC(ARMul_FIRST, inst, &rslt32);
 
 	while (cpab == ARMul_BUSY) {
@@ -13455,7 +13457,7 @@ void SIMIT_IMP(stc1_stc1_11_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-	
+
 	address = READ_REG(rn) + (offset << 2);
 ;
 
@@ -13466,7 +13468,7 @@ void SIMIT_IMP(stc1_stc1_11_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->STC(ARMul_FIRST, inst, &rslt32);
 
 	while (cpab == ARMul_BUSY) {
@@ -13516,7 +13518,7 @@ void SIMIT_IMP(stc2_stc2_00_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-	
+
 	start_addr = base_addr;
 	address = base_addr - (offset << 2);
 ;
@@ -13528,7 +13530,7 @@ void SIMIT_IMP(stc2_stc2_00_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->STC(ARMul_FIRST, inst, &rslt32);
 
 	while (cpab == ARMul_BUSY) {
@@ -13542,7 +13544,7 @@ void SIMIT_IMP(stc2_stc2_00_) (emulator_t *emu, target_inst_t inst)
 	if (cpab == ARMul_CANT){
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	WRITE_REG(rn, address);
 
 	address = start_addr;
@@ -13583,7 +13585,7 @@ void SIMIT_IMP(stc2_stc2_01_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-	
+
 	start_addr = base_addr;
 	address = base_addr + (offset << 2);
 ;
@@ -13595,7 +13597,7 @@ void SIMIT_IMP(stc2_stc2_01_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->STC(ARMul_FIRST, inst, &rslt32);
 
 	while (cpab == ARMul_BUSY) {
@@ -13609,7 +13611,7 @@ void SIMIT_IMP(stc2_stc2_01_) (emulator_t *emu, target_inst_t inst)
 	if (cpab == ARMul_CANT){
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	WRITE_REG(rn, address);
 
 	address = start_addr;
@@ -13650,7 +13652,7 @@ void SIMIT_IMP(stc2_stc2_10_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-	
+
 	start_addr = address = base_addr - (offset << 2);
 ;
 
@@ -13661,7 +13663,7 @@ void SIMIT_IMP(stc2_stc2_10_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->STC(ARMul_FIRST, inst, &rslt32);
 
 	while (cpab == ARMul_BUSY) {
@@ -13675,7 +13677,7 @@ void SIMIT_IMP(stc2_stc2_10_) (emulator_t *emu, target_inst_t inst)
 	if (cpab == ARMul_CANT){
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	WRITE_REG(rn, address);
 
 	address = start_addr;
@@ -13716,7 +13718,7 @@ void SIMIT_IMP(stc2_stc2_11_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-	
+
 	start_addr = address = base_addr + (offset << 2);
 ;
 
@@ -13727,7 +13729,7 @@ void SIMIT_IMP(stc2_stc2_11_) (emulator_t *emu, target_inst_t inst)
 	if (!CP_ACCESS_ALLOWED (cp_num)) {
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	cpab = emu->copro[cp_num]->STC(ARMul_FIRST, inst, &rslt32);
 
 	while (cpab == ARMul_BUSY) {
@@ -13741,7 +13743,7 @@ void SIMIT_IMP(stc2_stc2_11_) (emulator_t *emu, target_inst_t inst)
 	if (cpab == ARMul_CANT){
 		ABORT2(UndefinedInstrV);
 	}
-	
+
 	WRITE_REG(rn, address);
 
 	address = start_addr;
@@ -13778,7 +13780,7 @@ void SIMIT_IMP(mra_) (emulator_t *emu, target_inst_t inst)
 		val32 = (emu->accumulator >> 32) & 255;
 		if (val32 & 128)
 			val32 -= 256;
-		
+
 		WRITE_REG(rd,emu->accumulator);
 		WRITE_REG(rn,val32);
 	}
@@ -13817,7 +13819,7 @@ void SIMIT_IMP(clz_) (emulator_t *emu, target_inst_t inst)
 	uint32_t rslt32;
 
 
-	
+
 	if (emu->is_xscale()) {
 		val32=READ_REG(rm);
 		if(val32==0){
@@ -13853,11 +13855,11 @@ void SIMIT_IMP(ldd_imm_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 		if(rd & 1)
 			ABORT2(UndefinedInstrV);
-		
+
 		offset = (imm4_1 << 4) | imm4_2;
 
 		address = READ_REG(rn);
-	
+
 		fault = NO_FAULT;
 
 		if(address & 7)/* Alignment violation.  */
@@ -13868,13 +13870,13 @@ void SIMIT_IMP(ldd_imm_) (emulator_t *emu, target_inst_t inst)
 			ABORT( DataAbortV );
 		}
 		WRITE_REG(rd, rslt32);
-		
+
 		MMU_READ_WORD(address+4,&rslt32);
 		if(fault){
 			ABORT( DataAbortV );
 		}
 		WRITE_REG(rd+1, rslt32);
-		
+
 		WRITE_REG(rn, ufld?READ_REG(rn)+offset:READ_REG(rn)-offset);
 	}
 	else
@@ -13902,11 +13904,11 @@ void SIMIT_IMP(ldd_imm_p_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 		if(rd & 1)
 			ABORT2(UndefinedInstrV);
-		
+
 		offset = (imm4_1 << 4) | imm4_2;
-	
+
 		address = ufld?READ_REG(rn)+offset:READ_REG(rn)-offset;
-		
+
 		fault = NO_FAULT;
 
 		if(address & 7)/* Alignment violation.  */
@@ -13917,7 +13919,7 @@ void SIMIT_IMP(ldd_imm_p_) (emulator_t *emu, target_inst_t inst)
 			ABORT( DataAbortV );
 		}
 		WRITE_REG(rd, rslt32);
-		
+
 		MMU_READ_WORD(address+4,&rslt32);
 		if(fault){
 			ABORT( DataAbortV );
@@ -13926,7 +13928,7 @@ void SIMIT_IMP(ldd_imm_p_) (emulator_t *emu, target_inst_t inst)
 
 		if (wfld)
 			WRITE_REG(rn, address);
-	
+
 	}
 	else
 		ABORT2(UndefinedInstrV);
@@ -13954,7 +13956,7 @@ void SIMIT_IMP(ldd_reg_) (emulator_t *emu, target_inst_t inst)
 
 		offset = READ_REG(rm);
 		address = READ_REG(rn);
-	
+
 		fault = NO_FAULT;
 
 		if(address & 7)/* Alignment violation.  */
@@ -13965,7 +13967,7 @@ void SIMIT_IMP(ldd_reg_) (emulator_t *emu, target_inst_t inst)
 			ABORT( DataAbortV );
 		}
 		WRITE_REG(rd, rslt32);
-		
+
 		MMU_READ_WORD(address+4,&rslt32);
 		if(fault){
 			ABORT( DataAbortV );
@@ -13998,7 +14000,7 @@ void SIMIT_IMP(ldd_reg_p_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 		if(rd & 1)
 			ABORT2(UndefinedInstrV);
-	
+
 		offset = READ_REG(rm);
 		address = ufld?READ_REG(rn)+offset:READ_REG(rn)-offset;
 
@@ -14012,7 +14014,7 @@ void SIMIT_IMP(ldd_reg_p_) (emulator_t *emu, target_inst_t inst)
 			ABORT( DataAbortV );
 		}
 		WRITE_REG(rd, rslt32);
-		
+
 		MMU_READ_WORD(address+4,&rslt32);
 		if(fault){
 			ABORT( DataAbortV );
@@ -14045,7 +14047,7 @@ void SIMIT_IMP(std_imm_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 		if(rd & 1)
 			ABORT2(UndefinedInstrV);
-	
+
 		offset = (imm4_1 << 4) | imm4_2;
 		address = READ_REG(rn);
 
@@ -14089,7 +14091,7 @@ void SIMIT_IMP(std_imm_p_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 		if(rd & 1)
 			ABORT2(UndefinedInstrV);
-	
+
 		offset = (imm4_1 << 4) | imm4_2;
 		address = ufld?READ_REG(rn)+offset:READ_REG(rn)-offset;
 
@@ -14132,7 +14134,7 @@ void SIMIT_IMP(std_reg_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 		if(rd & 1)
 			ABORT2(UndefinedInstrV);
-	
+
 		offset = READ_REG(rm);
 		address = READ_REG(rn);
 
@@ -14221,23 +14223,23 @@ void SIMIT_IMP(smla_xy_) (emulator_t *emu, target_inst_t inst)
 
 	if (emu->is_xscale() ) {
 	/*  SMLAxy insn.  */
-		
+
 		val32 = READ_REG(rn);
-		
-		op1 = READ_REG(rm); 
+
+		op1 = READ_REG(rm);
 		op2 = READ_REG(rs);
 
 		op1 = x_bit ? op1>>16 : op1&0xFFFF;
 		op2 = y_bit ? op2>>16 : op2&0xFFFF;
-						
+
 		if (op1 & 0x8000)
 			op1 -= 65536;
 		if (op2 & 0x8000)
 			op2 -= 65536;
-		
+
 		tmp32 = op1 * op2;
 		rslt32 = val32 + tmp32;
-		
+
 		WRITE_REG(rd, rslt32);
 
 		ASGN_Q((val32^tmp32^-1) & (val32^rslt32));
@@ -14267,12 +14269,12 @@ void SIMIT_IMP(smlal_xy_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 	/*  SMLALxy insn.  */
 
-		op1 = READ_REG(rm); 
+		op1 = READ_REG(rm);
 		op2 = READ_REG(rs);
 
 		op1 = x_bit ? op1>>16 : op1&0xFFFF;
 		op2 = y_bit ? op2>>16 : op2&0xFFFF;
-						
+
 		if (op1 & 0x8000)
 			op1 -= 65536;
 		if (op2 & 0x8000)
@@ -14308,12 +14310,12 @@ void SIMIT_IMP(smlaw_y_) (emulator_t *emu, target_inst_t inst)
 
 	if (emu->is_xscale() ) {
 	/*  SMLAWy insn.  */
-		
+
 		val32  =  READ_REG(rn);
 
 		op2 = READ_REG(rs);
 		op2 = y_bit ? op2>>16 : op2&0xFFFF;
-						
+
 		if (op2 & 0x8000)
 			op2 -= 65536;
 
@@ -14323,7 +14325,7 @@ void SIMIT_IMP(smlaw_y_) (emulator_t *emu, target_inst_t inst)
 		WRITE_REG(rd,rslt32);
 
 		ASGN_Q((val32^tmp32^-1) & (val32^rslt32));
-	
+
 	}
 	else
 		ABORT2(UndefinedInstrV);
@@ -14347,7 +14349,7 @@ void SIMIT_IMP(smul_xy_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 	/*  SMULxy insn.  */
 
-		op1 = READ_REG(rm); 
+		op1 = READ_REG(rm);
 		op2 = READ_REG(rs);
 
 		op1 = x_bit ? op1>>16 : op1&0xFFFF;
@@ -14383,14 +14385,14 @@ void SIMIT_IMP(smulw_y_) (emulator_t *emu, target_inst_t inst)
 
 		op2 = READ_REG(rs);
 		op2 = y_bit ? op2>>16 : op2&0xFFFF;
-						
+
 		if (op2 & 0x8000)
 			op2 -= 65536;
 
-		rslt32  = (uint32_t)( (int64_t)READ_REG(rm)*op2  >> 16); 
+		rslt32  = (uint32_t)( (int64_t)READ_REG(rm)*op2  >> 16);
 
 		WRITE_REG(rd,rslt32);
-	
+
 	}
 	else
 		ABORT2(UndefinedInstrV);
@@ -14413,7 +14415,7 @@ void SIMIT_IMP(qadd_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 	/*   QADD insn.  */
 
-		val32 = READ_REG(rm); 
+		val32 = READ_REG(rm);
 		tmp32 = READ_REG(rn);
 		rslt32 = val32 + tmp32;
 
@@ -14422,7 +14424,7 @@ void SIMIT_IMP(qadd_) (emulator_t *emu, target_inst_t inst)
 			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
 			SET_Q;
 		}
-		
+
 		WRITE_REG(rd,rslt32);
 	}
 	else
@@ -14447,7 +14449,7 @@ void SIMIT_IMP(qdadd_) (emulator_t *emu, target_inst_t inst)
 	/*   QDADD insn.  */
 
 		val32 = READ_REG(rm);
-		tmp32 = READ_REG(rn); 
+		tmp32 = READ_REG(rn);
 
 
 		if ((tmp32^tmp32^-1) & (tmp32^(tmp32<<1))){
@@ -14456,14 +14458,14 @@ void SIMIT_IMP(qdadd_) (emulator_t *emu, target_inst_t inst)
 		}
 		else
 			tmp32<<=1;
-		
+
 		rslt32 = val32 + tmp32;
-		
+
 		if ((val32^tmp32^-1) & (val32^rslt32)){
 			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
 			SET_Q;
 		}
-		
+
 		WRITE_REG(rd,rslt32);
 	}
 	else
@@ -14487,7 +14489,7 @@ void SIMIT_IMP(qsub_) (emulator_t *emu, target_inst_t inst)
 	if (emu->is_xscale() ) {
 	/*   QSUB insn.  */
 
-		val32 = READ_REG(rm); 
+		val32 = READ_REG(rm);
 		tmp32 = READ_REG(rn);
 		rslt32 = val32 - tmp32;
 
@@ -14496,7 +14498,7 @@ void SIMIT_IMP(qsub_) (emulator_t *emu, target_inst_t inst)
 			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
 			SET_Q;
 		}
-		
+
 		WRITE_REG(rd,rslt32);
 	}
 	else
@@ -14521,7 +14523,7 @@ void SIMIT_IMP(qdsub_) (emulator_t *emu, target_inst_t inst)
 	/*   QDSUB insn.  */
 
 		val32 = READ_REG(rm);
-		tmp32 = READ_REG(rn); 
+		tmp32 = READ_REG(rn);
 
 
 		if ((tmp32^tmp32^-1) & (tmp32^(tmp32<<1))){
@@ -14530,14 +14532,14 @@ void SIMIT_IMP(qdsub_) (emulator_t *emu, target_inst_t inst)
 		}
 		else
 			tmp32<<=1;
-		
+
 		rslt32 = val32 - tmp32;
-		
+
 		if ((val32^tmp32) & (val32^rslt32)){
 			rslt32 = (rslt32 & 0x80000000)? 0x7fffffff:0x80000000;
 			SET_Q;
 		}
-		
+
 		WRITE_REG(rd,rslt32);
 	}
 	else
@@ -14545,4 +14547,3 @@ void SIMIT_IMP(qdsub_) (emulator_t *emu, target_inst_t inst)
 
 
 }
-

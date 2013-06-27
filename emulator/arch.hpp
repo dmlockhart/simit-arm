@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -66,9 +66,9 @@
 #define HAS_SPSR          IN_EXCEPTION_MODE
 
 #define CP_ACCESS_ALLOWED(CP) \
-    		((CP >= 14) || emu->mmu->cp_access_allowed(CP))
+		((CP >= 14) || emu->mmu->cp_access_allowed(CP))
 
-#define XSCALE_UPDATE_FSR_FAR(status,addr) 
+#define XSCALE_UPDATE_FSR_FAR(status,addr)
 		//	(emu->mmu->xscale_update_fsr_far(status,addr))
 
 #define DO_SWI(a) emu->raise_exception(SWIV)
@@ -97,12 +97,12 @@
 
 #define CP_ACCESS_ALLOWED(CP) false
 
-#define XSCALE_UPDATE_FSR_FAR(status,addr) 
+#define XSCALE_UPDATE_FSR_FAR(status,addr)
 
 #define DO_SWI(a) do_syscall(emu,a);
 
 // data abort should never occur
-#define ABORT(v) 
+#define ABORT(v)
 
 // ignores undefined instruction and other faults
 #define ABORT2(v) do {impl_default(emu, inst); return;} while (0)

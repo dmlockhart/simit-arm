@@ -3,9 +3,9 @@
 
 #include "arm_io.h"
 
-namespace simit{ 
+namespace simit{
 /* IO for StrongARM */
-class sa_io : public arm_io 
+class sa_io : public arm_io
 {
 	public:
 

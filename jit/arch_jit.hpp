@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -38,8 +38,8 @@
 
 #undef N_FLAG
 #undef Z_FLAG
-#undef C_FLAG 
-#undef V_FLAG 
+#undef C_FLAG
+#undef V_FLAG
 
 #define N_FLAG (emu->read_NZF()>>31)
 #define Z_FLAG (emu->read_NZF()==0)
@@ -177,7 +177,7 @@
 
 #endif // SIMIT_SYSTEM_LEVEL
 
- 
+
 
 #else /* !SIMIT_COMPILED_ISS, interpretation starts here */
 

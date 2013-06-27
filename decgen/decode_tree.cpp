@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modiy
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -148,7 +148,7 @@ void DecodeTreeNode::decode(double minUtilization)
 					minHeight = height;
 					minRatio = uratio;
 #if 0
-					cout << "***" << minMask << "***"; 
+					cout << "***" << minMask << "***";
 					cout << "***" << minSignature << "***";
 					cout << "***" << minHeight << "***";
 					cout << "***" << minRatio << "***" << endl;
@@ -273,7 +273,7 @@ void DecodeTreeNode::decode(double minUtilization)
 	if (maxPatternGain>=maxTableGain) {
 		this->scheme = DECODE_PATTERN;
 #if DEBUG>0
-		cout << "decode by pattern: " 
+		cout << "decode by pattern: "
 			<< " mask " << PADDEDHEX << minPatternMask
 			<< " signature " << PADDEDHEX << minPatternSignature
 			<< endl;
@@ -299,7 +299,7 @@ void DecodeTreeNode::decode(double minUtilization)
 		t2->decode(minUtilization);
 
 		this->totalTableSize = t1->totalTableSize + t2->totalTableSize;
-		this->totalNodeCount = t1->totalNodeCount + t2->totalNodeCount + 1; 
+		this->totalNodeCount = t1->totalNodeCount + t2->totalNodeCount + 1;
 		this->children.push_back(t1);
 		this->children.push_back(t2);
 
@@ -314,7 +314,7 @@ void DecodeTreeNode::decode(double minUtilization)
 		this->pat_signature = minPatternSignature;
 
 	}
-	else { /* table decode */ 
+	else { /* table decode */
 
 		vector<DecodeTable *> subs = this->table->divide_by_table(minTableMask,
 			minTableBits, minTableShift);
@@ -340,7 +340,7 @@ void DecodeTreeNode::decode(double minUtilization)
 
 		this->maxHeight += 1;
 		this->minHeight += 1;
-		this->tab_mask= minTableMask;                      
+		this->tab_mask= minTableMask;
 		this->tab_shift = minTableShift;
 	}
 
@@ -348,7 +348,7 @@ void DecodeTreeNode::decode(double minUtilization)
 
 void DecodeTreeNode::emitXML(ostream& os, const string &indent)
 {
-	os << indent << "<table index=\"" << this->table->getIndex() 
+	os << indent << "<table index=\"" << this->table->getIndex()
 		<< "\">" << endl;
 	os << indent << "  <size>"<< this->table->getSize() << "</size>" << endl;
 
@@ -389,7 +389,7 @@ static int static_label = 0;
 void DecodeTreeNode::labelTableNode()
 {
 	switch(scheme) {
-		case DECODE_TABLE: 
+		case DECODE_TABLE:
 			this->label = static_label++;
 		case DECODE_PATTERN: {
 				vector<DecodeTreeNode *>::iterator it;
@@ -482,7 +482,7 @@ void DecodeTreeNode::emitCCode(ostream &os, const string& indent)
 
 		case DECODE_NULL:
 			assert(this->table->getSize());
-			os << indent << "_FUNC_CALL(" 
+			os << indent << "_FUNC_CALL("
 				<< (this->table->getEntries().front()).label
 				<< ");" << endl;
 		default: break;
@@ -536,9 +536,9 @@ void DecodeTreeNode::emitC(ostream &os)
 	os << "Decoder characteristics " << endl;
 	os << "Gamma          : " << this->gamma << endl;
 	os << "1 bit only     : " << do_onebit << endl;
-	os << "Average height : " << this->height << endl;   
-	os << "Maximum height : " << this->maxHeight << endl;   
-	os << "Minimum height : " << this->minHeight << endl;   
+	os << "Average height : " << this->height << endl;
+	os << "Maximum height : " << this->maxHeight << endl;
+	os << "Minimum height : " << this->minHeight << endl;
 	os << "Table entries  : " << this->totalTableSize << endl;
 	os << "Total nodes    : " << this->totalNodeCount << endl;
 	os << "*/" << endl << endl;

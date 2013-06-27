@@ -1,16 +1,16 @@
 /*  armcopro.c -- co-processor interface:  ARM6 Instruction Emulator.
     Copyright (C) 1994, 2000 Advanced RISC Machines Ltd.
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
- 
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
- 
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
@@ -247,7 +247,7 @@ unsigned copro6::MRC (unsigned type, word_t instr, word_t *data)
 
 	switch (creg) {
 		case 0:
-			emu->io->read_word(ICIP,data); 
+			emu->io->read_word(ICIP,data);
 			break;
 		case 1:
 			emu->io->read_word(ICMR,data);
@@ -280,12 +280,12 @@ unsigned copro6::MCR (unsigned type, word_t instr, word_t data)
 			break;
 		case 7:
 			if(last_creg == 1)
-				emu->io->write_word(ICMR, data); 
+				emu->io->write_word(ICMR, data);
 			last_creg = creg;
 			break;
 		case 8:
 			if(last_creg == 2)
-				emu->io->write_word(ICLR, data); 
+				emu->io->write_word(ICLR, data);
 			last_creg = creg;
 			break;
 		default:

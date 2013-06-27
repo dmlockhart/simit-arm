@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -27,14 +27,14 @@ memory::memory(unsigned int def_perm, int sig)
 	def_perm &= MEMORY_PAGE_PERM_MASK;
 
 	/* if nonempty permission, then all pages are valid by default */
-	if (def_perm) 
+	if (def_perm)
 	{
 		for (unsigned int ii=0; ii<MEMORY_PAGE_TABLE_SIZE; ii++)
-			page_table[ii].flag = 
+			page_table[ii].flag =
 				MEMORY_PAGE_EMPTY | (def_perm << MEMORY_PAGE_PERM_SHIFT);
 	}
 	/* otherwise all pages are invalid by default */
-	else 
+	else
 	{
 		for (unsigned int ii=0; ii<MEMORY_PAGE_TABLE_SIZE; ii++)
 			page_table[ii].flag = MEMORY_PAGE_UNAVAIL;
@@ -49,7 +49,7 @@ memory::~memory()
 	for(unsigned int ii = 0; ii < MEMORY_PAGE_TABLE_SIZE; ii++)
 	{
 		memory_page_table_entry_t *pte = page_table + ii;
-		if (page_allocated(pte)) 
+		if (page_allocated(pte))
 			free_page(pte);
 	}
 
@@ -87,7 +87,7 @@ void memory::reset()
 	for(unsigned int ii = 0; ii < MEMORY_PAGE_TABLE_SIZE; ii++)
 	{
 		memory_page_table_entry_t *pte = page_table + ii;
-		if (page_allocated(pte)) 
+		if (page_allocated(pte))
 		{
 			free_page(pte);
 		}
@@ -119,9 +119,9 @@ void memory::set_page_permission(target_addr_t addr, unsigned int perm)
 
 	// otherwise set permission
 	perm &= MEMORY_PAGE_PERM_MASK;
-	if (pte->flag & MEMORY_PAGE_SLOW) 
+	if (pte->flag & MEMORY_PAGE_SLOW)
 	{
-		perm = perm << MEMORY_PAGE_PERM_SHIFT;        
+		perm = perm << MEMORY_PAGE_PERM_SHIFT;
 		pte->flag &= ~(MEMORY_PAGE_PERM_MASK << MEMORY_PAGE_PERM_SHIFT);
 		pte->flag |= perm;
 	}
@@ -148,7 +148,7 @@ void memory::set_region_permission(target_addr_t addr,
 }
 
 
-void memory::remap_page(target_addr_t addr, 
+void memory::remap_page(target_addr_t addr,
 	memory_ext_interface *mif, unsigned int perm)
 {
 	memory_page_table_entry_t *pte = get_page(addr);
@@ -157,7 +157,7 @@ void memory::remap_page(target_addr_t addr,
 	if (page_allocated(pte))
 		free_page(pte);
 
-	pte->flag = MEMORY_PAGE_REMAPPED; 
+	pte->flag = MEMORY_PAGE_REMAPPED;
 	pte->flag |= (perm & MEMORY_PAGE_PERM_MASK) << MEMORY_PAGE_PERM_SHIFT;
 	pte->ptr = reinterpret_cast<byte_t *>(mif);
 }
@@ -206,7 +206,7 @@ void memory::mark_page_available(target_addr_t addr, unsigned int perm)
 	perm &= MEMORY_PAGE_PERM_MASK;
 
 	/* if already available, change the permission only */
-	if (pte->flag & MEMORY_PAGE_UNAVAIL) 
+	if (pte->flag & MEMORY_PAGE_UNAVAIL)
 		pte->flag = MEMORY_PAGE_EMPTY | (perm << MEMORY_PAGE_PERM_SHIFT);
 	else
 		set_page_permission(addr, perm);
@@ -220,7 +220,7 @@ void memory::mark_page_unavailable(target_addr_t addr)
 	if (page_allocated(pte))
 		free_page(pte);
 
-	pte->flag = MEMORY_PAGE_UNAVAIL; 
+	pte->flag = MEMORY_PAGE_UNAVAIL;
 }
 
 void memory::mark_region_available(target_addr_t addr,
@@ -279,7 +279,7 @@ void memory::free_page(memory_page_table_entry_t *pte)
 	assert(page_allocated(pte));
 
 	free (pte->ptr + ((pte - page_table) << MEMORY_PAGE_SIZE_BITS));
-	pte->flag = MEMORY_PAGE_EMPTY | 
+	pte->flag = MEMORY_PAGE_EMPTY |
 		((pte->flag & MEMORY_PAGE_PERM_MASK) << MEMORY_PAGE_PERM_SHIFT);
 
 	page_count--;
@@ -401,7 +401,7 @@ memory_fault_t memory::write_block(void *buf, target_addr_t addr,
 	return MEM_NO_FAULT;
 }
 
-memory_fault_t memory::set_block_within_page(target_addr_t addr, byte_t value, 
+memory_fault_t memory::set_block_within_page(target_addr_t addr, byte_t value,
 		unsigned int size, unsigned int *psize)
 {
 	memory_fault_t fault;
@@ -465,7 +465,7 @@ memory_fault_t memory::check_page_permission
 		return MEM_BADADDR_FAULT;
 
 	unsigned int priv = pte->flag & MEMORY_PAGE_PERM_MASK;
-	if (pte->flag & MEMORY_PAGE_AVAIL_SLOW) 
+	if (pte->flag & MEMORY_PAGE_AVAIL_SLOW)
 		priv = (pte->flag >> MEMORY_PAGE_PERM_SHIFT) & MEMORY_PAGE_PERM_MASK;
 
 	perm &= ~priv;
@@ -501,7 +501,7 @@ REMAP_READ_INSTANTIATE(word)
 REMAP_READ_INSTANTIATE(dword)
 
 
-template <class T> 
+template <class T>
 static memory_fault_t remap_write(memory_ext_interface *intf,
 	target_addr_t addr, T val)
 {
@@ -539,15 +539,15 @@ memory_fault_t memory::read_slow_base(target_addr_t addr, T *pval)
 		memory_page_table_entry_t *pte = get_page(addr);
 
 		if ((fault = check_page_permission(pte, MEMORY_PAGE_READABLE)) !=
-					MEM_NO_FAULT) 
+					MEM_NO_FAULT)
 		{
 			*pval = 0;	// make pval deterministic so convenient to debug
 			report_fault(fault, addr);
-			return fault;	
+			return fault;
 		}
 
 		// check storage allocation
-		if (pte->flag & MEMORY_PAGE_EMPTY) 
+		if (pte->flag & MEMORY_PAGE_EMPTY)
 		{
 			if ((fault = allocate_page(pte)) != MEM_NO_FAULT)
 			{
@@ -556,7 +556,7 @@ memory_fault_t memory::read_slow_base(target_addr_t addr, T *pval)
 			}
 			value = *reinterpret_cast<T *>(pte->ptr + addr);
 		}
-		else //if (pte->flag & MEMORY_PAGE_REMAPPED) 
+		else //if (pte->flag & MEMORY_PAGE_REMAPPED)
 		{
 			/* I/O should take care of endianness by itself */
 			return remap_read<T>
@@ -597,7 +597,7 @@ memory_fault_t memory::write_slow_base(target_addr_t addr, T value)
 					MEM_NO_FAULT)
 		{
 			report_fault(fault, addr);
-			return fault;	
+			return fault;
 		}
 
 		// check storage allocation
@@ -611,7 +611,7 @@ memory_fault_t memory::write_slow_base(target_addr_t addr, T value)
 			*reinterpret_cast<T *>(pte->ptr + addr) = val;
 			return MEM_NO_FAULT;
 		}
-		else //if (pte->flag & MEMORY_PAGE_REMAPPED) 
+		else //if (pte->flag & MEMORY_PAGE_REMAPPED)
 		{
 			/* I/O should take care of endianness by itself */
 			return remap_write<T>
@@ -684,19 +684,19 @@ bool test(memory *mem)
 	hword_t hw;
 	for (i=0; i<1024;i+=2)
 	{
-		if (mem->write_hword(i, (hword_t)i)) 
+		if (mem->write_hword(i, (hword_t)i))
 		{
 			ret = false;
 			std::cerr << "hword write failed at " << i << std::endl;
 		}
 	}
 
-	for (i=0; i<1024;i+=2) 
+	for (i=0; i<1024;i+=2)
 	{
 		byte_t b1, b2;
 		if (mem->read_hword(i, &hw) || hw!=(hword_t)i ||
 			mem->read_byte(i, &b1) || b1 != (byte_t)i ||
-			mem->read_byte(i+1, &b2) || b2 != (byte_t)(i>>8)) 
+			mem->read_byte(i+1, &b2) || b2 != (byte_t)(i>>8))
 		{
 			ret = false;
 			std::cerr << "hword test failed at " << i << ", get " << hw
@@ -707,7 +707,7 @@ bool test(memory *mem)
 
 	/* test word */
 	word_t w;
-	for (i=0; i<1024;i+=4) 
+	for (i=0; i<1024;i+=4)
 	{
 		if (mem->write_word(i, (word_t)i))
 		{
@@ -716,7 +716,7 @@ bool test(memory *mem)
 		}
 	}
 
-	for (i=0; i<1024;i+=4) 
+	for (i=0; i<1024;i+=4)
 	{
 		byte_t b1, b2;
 		if (mem->read_word(i, &w) || w!=i ||
@@ -740,15 +740,15 @@ bool test(memory *mem)
 		}
 	}
 
-	for (i=0; i<1024;i+=8) 
+	for (i=0; i<1024;i+=8)
 	{
 		byte_t b1, b2;
 		if (mem->read_dword(i, &dw) || dw!=(((dword_t)i<<32)|i) ||
 			mem->read_byte(i, &b1) || b1!=(byte_t)i ||
-			mem->read_byte(i+7, &b2) || b2!=(byte_t)(i>>24)) 
+			mem->read_byte(i+7, &b2) || b2!=(byte_t)(i>>24))
 		{
 			ret = false;
-			std::cerr << "dword test failed at " << i << ", get " << dw 
+			std::cerr << "dword test failed at " << i << ", get " << dw
 				  << std::endl;
 		}
 	}
@@ -781,11 +781,11 @@ bool test(memory *mem)
 	}
 
 	/* alignment test at page boundary*/
-	for (i=0; i<4; i++) 
+	for (i=0; i<4; i++)
 	{
 		mem->write_hword(MEMORY_PAGE_SIZE-i, 0x6677);
 		mem->read_hword(MEMORY_PAGE_SIZE-i, &hw);
-		if (hw != 0x6677) 
+		if (hw != 0x6677)
 		{
 			ret = false;
 			std::cerr << "hword alignment test failed at " << i << ", get "
@@ -796,13 +796,13 @@ bool test(memory *mem)
 	/* test block */
 	char hello[] = "hello world!\n";
 	char bufff[sizeof(hello)];
-	
+
 
 	mem->write_block(hello, MEMORY_PAGE_SIZE-1, sizeof(hello));
 	mem->read_block(bufff, MEMORY_PAGE_SIZE-1, sizeof(hello));
 
 	for (i=0; i<sizeof(hello);i+=8)
-		if (bufff[i]!=hello[i]) 
+		if (bufff[i]!=hello[i])
 		{
 			ret = false;
 			std::cerr << "block test failed at " << i << ", get " << bufff[i]
@@ -814,12 +814,12 @@ bool test(memory *mem)
 		mem->write_word(i, (word_t)i);
 
 	memory mem_cpy(*mem);
-	for (i=0; i<1024;i+=4) 
+	for (i=0; i<1024;i+=4)
 	{
 		byte_t b1, b2;
 		if (mem_cpy.read_word(i, &w) || w!=i ||
 			mem_cpy.read_byte(i, &b1) || b1!=(byte_t)i ||
-			mem_cpy.read_byte(i+3, &b2) || b2!=(byte_t)(i>>24)) 
+			mem_cpy.read_byte(i+3, &b2) || b2!=(byte_t)(i>>24))
 		{
 			ret = false;
 			std::cerr << "copy test failed at " << i << ", get " << w
@@ -827,7 +827,7 @@ bool test(memory *mem)
 		}
 	}
 
-	if (mem_cpy.get_page_count() != mem->get_page_count()) 
+	if (mem_cpy.get_page_count() != mem->get_page_count())
 	{
 		std::cerr << "page count mismatch after copying" << std::endl;
 		ret = false;
@@ -849,4 +849,3 @@ int main()
 		std::cerr << "memory test failed!" << std::endl;
 }
 #endif
-

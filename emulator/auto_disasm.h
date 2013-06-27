@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -33,4 +33,3 @@
 
 #define _MAIN_DECODE_ENTRY \
   char *disasm_main(arm_inst_t inst, arm_addr_t pc, char *buf)
-

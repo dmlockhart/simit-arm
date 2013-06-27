@@ -2,7 +2,7 @@
     Copyright (C) 2002 - 2007 Wei Qin
     See file COPYING for more information.
 
-    This program is free software; you can redistribute it and/or modify    
+    This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
@@ -16,7 +16,7 @@
 #ifndef SIMIT_TLB_H
 #define SIMIT_TLB_H
 
-//#define RECORD_TLB_MISS			
+//#define RECORD_TLB_MISS
 
 #include <misc.h>
 
@@ -74,9 +74,9 @@ typedef enum mmu_fault_t
 	PAGE_DOMAIN_FAULT = 0xB,
 	SECTION_PERMISSION_FAULT = 0xD,
 	SUBPAGE_PERMISSION_FAULT = 0xF,
-	/* this is for speed up checking access permisssion */	
+	/* this is for speed up checking access permisssion */
 	SLOW_ACCESS_CHECKING = 0x3,
-	/* this is for jit self-mofifying code check*/	
+	/* this is for jit self-mofifying code check*/
 	JIT_ALARM_FAULT = 0xff,
 } mmu_fault_t;
 
@@ -106,7 +106,7 @@ template <unsigned num> class tlb {
 
 		/* destructor */
 		~tlb() {
-#ifdef RECORD_TLB_MISS			
+#ifdef RECORD_TLB_MISS
 			printf("tlb miss = %u \n",miss_count);
 #endif
 		}
@@ -118,14 +118,14 @@ template <unsigned num> class tlb {
 		}
 
 		void invalidate_all () {
-			
+
 			for (unsigned i= 0; i < num; i++) {
 				entries[i].mapping = TLB_INVALID;
 				entries[i].mask = 0xFFFFFFFF;
 				entries[i].virt_addr = 0xFFFFFFFF;
 			}
 			last_e= &entries[0];
-			
+
 			cycle = 0;
 		}
 
@@ -143,33 +143,33 @@ template <unsigned num> class tlb {
 		tlb_entry_t *search (word_t virt_addr) {
 			for (unsigned i = 0; i <num; i++) {
 				if (entries[i].mapping != TLB_INVALID &&
-					((virt_addr & entries[i].mask) == 
+					((virt_addr & entries[i].mask) ==
 					(entries[i].virt_addr & entries[i].mask))) {
 					return &entries[i];
 				}
 			}
-#ifdef RECORD_TLB_MISS			
+#ifdef RECORD_TLB_MISS
 			miss_count++;
 #endif
 			return NULL;
 		}
-		
+
 
 		/* update RB */
 		tlb_entry_t *next () {
 			last_e = entries + cycle;
 			cycle = (cycle+1) % num;
-			
+
 			return last_e;
 		}
 
 		tlb_entry_t *get_entry(int index){
 			return entries + index;
 		}
-	
+
 	private:
-	
-		tlb_entry_t entries[num]; 
+
+		tlb_entry_t entries[num];
 		tlb_entry_t *last_e;
 
 		int cycle;	/* current tlb cycle, state for round robin policy */
