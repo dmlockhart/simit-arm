@@ -28,7 +28,7 @@ $(CONFLEX_SRC): $(CONFLEX)
 
 #SUBDIRS = nwfpe old
 
-bin_PROGRAMS = ema 
+bin_PROGRAMS = ema
 
 ema_SOURCES = main.cpp
 
@@ -55,4 +55,3 @@ include_HEADERS = bittypes.h armemul.h emumem.h misc.h \
 
 
 EXTRA_DIST = $(DECODER_DEF) $(DECODER_DEF2) $(CONFPARSE) $(CONFLEX)
-

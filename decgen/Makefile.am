@@ -51,7 +51,7 @@ HDRS = decode.h decode_table.h huffman.h decode_tree.h decode_theiling.h \
 #decode_table64.o: decode_table.cpp $(HDRS)
 #	$(CXXCOMPILE) $(CFLAGS64) -c decode_table.cpp -o $@
 #
-#huffman64.o: huffman.cpp huffman.h 
+#huffman64.o: huffman.cpp huffman.h
 #	$(CXXCOMPILE) $(CFLAGS64) -c huffman.cpp -o $@
 #
 #decode_tree64.o: decode_tree.cpp $(HDRS)
@@ -71,5 +71,3 @@ EXTRA_DIST = $(DECLEX) $(DECPARSE)
 AM_CPPFLAGS = -I..
 
 CLEANFILES = $(DECPARSE_SRC) $(DECPARSE_HDR) $(DECLEX_SRC)
-
-

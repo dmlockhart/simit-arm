@@ -1,13 +1,14 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([SimIt-ARM], [3.0])
+AC_INIT([SimIt-ARM], [3.0], [weiqin@gmail.com])
 AC_CONFIG_SRCDIR([emulator/main.cpp])
-AM_CONFIG_HEADER(config.h:config.h.in)
 AM_INIT_AUTOMAKE
 
-#if the user sets CXXFLAGS
-usr_CXXFLAGS=${CXXFLAGS+set}
+AM_CONFIG_HEADER(config.h:config.h.in)
+
+#if the user sets CFLAGS
+usr_CFLAGS=${CFLAGS+set}
 
 # Checks for programs.
 AC_PROG_CC
@@ -17,67 +18,25 @@ AC_PROG_INSTALL
 AM_PROG_LEX
 AC_PROG_YACC
 
-if AX_IS_GXX() then
-    cxxflags="-O3"
-else
-	AC_MSG_WARN(["CXX is not g++, cannot build compiled simulator"])
-fi
+AC_ARG_ENABLE([devel],
+[  --enable-devel    Turn on development features],
+[case "${enableval}" in
+  yes) devel=true ;;
+  no)  devel=false ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-devel]) ;;
+esac],[devel=false])
+AM_CONDITIONAL([ENABLE_DEVEL], [test x$devel = xtrue])
 
-# if the user does not set CXX flags, we set it
-if test "$usr_CXXFLAGS" != set; then
+AC_ARG_ENABLE([jit],
+[  --enable-jit    Turn on JIT generator],
+[case "${enableval}" in
+  yes) jit=true ;;
+  no)  jit=false ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-jit]) ;;
+esac],[jit=false])
+AM_CONDITIONAL([ENABLE_JIT], [test x$jit = xtrue])
 
-  if AX_IS_GXX3OR4() then
-    cxxflags="$cxxflags -finline-limit=5000 -fomit-frame-pointer"
-  fi
-
-  if AX_CXX_FLAG_WORKS($cxxflags) then
-    CXXFLAGS=$cxxflags
-  else 
-    if AX_CXX_FLAG_WORKS(["-O3"]) then
-      CXXFLAGS="-O3"
-    fi
-  fi
-
-  # see if fpe flags are supported
-  # if AX_CXX_FLAG_WORKS([-msse2 -mfpmath=sse]) then
-  #    CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse"
-  #  FP_OPTION=" -msse2 -mfpmath=sse"
-  #  AC_SUBST([FP_OPTION])
-  # fi
-
-fi
-
-
-# check if user wants jit
-AC_ARG_ENABLE(jit,
-  [  --enable-jit  	Build just-in-time compiled-emulator],
-  [case "${enableval}" in
-     yes) jit=true ;;
-     no)  jit=false ;;
-     *) AC_MSG_ERROR(bad value ${enableval} for --enable-jit) ;;
-   esac],[jit=false])
-
-if test "x$jit" = xtrue; then
-	AC_CHECK_LIB(dl, dlerror, [jit=true],
-		[jit=false; AC_MSG_ERROR([libdl not found, can't enable JIT])])
-	AC_CHECK_LIB(pthread, pthread_testcancel, [jit=true],
-		[jit=false; AC_MSG_ERROR([libpthread not found, can't enable JIT])])
-fi
-
-AM_CONDITIONAL(ENABLE_JIT, test x$jit = xtrue)
-
-
-# check if user wants devel
-AC_ARG_ENABLE(devel,
-  [  --enable-devel	Build developer resources -- decgen and issgen],
-  [case "${enableval}" in
-     yes) devel=true ;;
-     no)  devel=false ;;
-     *) AC_MSG_ERROR(bad value ${enableval} for --enable-jit) ;;
-   esac],[devel=false])
-
-AM_CONDITIONAL(ENABLE_DEV, test x$devel = xtrue)
-
+cflags="-O3 -finline-limit=5000 -fomit-frame-pointer"
 
 # Check for gmp
 #AC_CHECK_LIB(gmp, __gmpz_init, , [AC_MSG_ERROR(
@@ -123,9 +82,5 @@ AC_FUNC_STRTOD
 AC_CHECK_FUNCS([atexit inet_ntoa memset mkdir munmap rmdir select socket strcasecmp strchr strdup strncasecmp strrchr strstr strtoul strtoull])
 
 AC_CONFIG_FILES([Makefile
-				 issgen/Makefile
-				 decgen/Makefile
-				 emulator/Makefile
-				 jit/build_dll.hpp
-				 jit/Makefile])
+				 emulator/Makefile])
 AC_OUTPUT

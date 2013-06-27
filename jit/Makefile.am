@@ -17,7 +17,7 @@ ema_jit_LDFLAGS = -export-dynamic -ldl -lpthread
 
 
 
-#server to assist compiled simulation 
+#server to assist compiled simulation
 decomp_server_SOURCES = decomp_server_main.cpp decomp_server.cpp \
 	decomp_server.hpp
 
@@ -26,7 +26,7 @@ decomp_server_LDFLAGS = -ldl
 
 
 
-AM_CPPFLAGS = -I$(top_srcdir)/emulator 
+AM_CPPFLAGS = -I$(top_srcdir)/emulator
 include_HEADERS = arch_jit.hpp dyn_arm_emul.hpp build_dll.hpp
 
 lib_LIBRARIES = libdynarmemu.a
@@ -40,4 +40,3 @@ EXTRA_DIST = build_dll.hpp.in
 
 install-data-hook:
 	\rm -rf ~/.ema/*
-

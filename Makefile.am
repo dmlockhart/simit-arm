@@ -5,13 +5,13 @@ else
 JIT =
 endif
 
-if ENABLE_DEV
-DEV = decgen issgen
+if ENABLE_DEVEL
+DEVEL = decgen issgen
 else
-DEV =
+DEVEL =
 endif
 
-SUBDIRS = emulator $(JIT) $(DEV)
+SUBDIRS = emulator $(JIT) $(DEVEL)
 
 EXTRA_DIST = test/grep test/wc issgen/arm.isa TODO
 
