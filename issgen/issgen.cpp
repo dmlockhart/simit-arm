@@ -19,7 +19,6 @@
 #include <list>
 #include <vector>
 #include <cassert>
-#include <cstring>
 #include <iomanip>
 
 using namespace issgen;
@@ -1132,17 +1131,17 @@ int main(int argc, char *argv[])
 	sym_inst = symbol_find_or_insert("inst");
 
 	for(int i = 1; i < argc; i++)
-    {
-        if (strcmp(argv[i], "-p") == 0) prefix = argv[++i]; else
-        if (!prog_name)
-        {
-            prog_name = argv[i];
-            break;
-        }
-    }
+	{
+		if (strcmp(argv[i], "-p") == 0) prefix = argv[++i]; else
+		if (!prog_name)
+		{
+			prog_name = argv[i];
+			break;
+		}
+	}
 
-    if ((bin_name = strrchr(argv[0], '/'))!=NULL) bin_name++;
-    else bin_name = argv[0];
+	if ((bin_name = strrchr(argv[0], '/'))!=NULL) bin_name++;
+	else bin_name = argv[0];
 
 	if (!prog_name) {
 		usage(bin_name);

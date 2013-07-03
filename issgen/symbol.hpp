@@ -32,7 +32,6 @@ namespace Sgi = ::__gnu_cxx;       // GCC 3.1 and later
 namespace Sgi = std;
 #endif
 
-#include <string>
 #include <cstring>
 #include <iostream>
 #include <vector>

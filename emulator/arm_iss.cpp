@@ -1,20 +1,4 @@
-/*************************************************************************
-    Copyright (C) 2002 - 2007 Wei Qin
-    See file COPYING for more information.
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-*************************************************************************/
-
 #include "arch.hpp"
-
 void SIMIT_IMP(movi_imm_mode1_) (emulator_t *emu, target_inst_t inst)
 {
 
@@ -11103,7 +11087,7 @@ void SIMIT_IMP(ldm1_ldm1_000_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
@@ -11145,7 +11129,7 @@ void SIMIT_IMP(ldm1_ldm1_001_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 	WRITE_REG(rn, base_addr - pcount);
@@ -11188,7 +11172,7 @@ void SIMIT_IMP(ldm1_ldm1_010_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
@@ -11230,7 +11214,7 @@ void SIMIT_IMP(ldm1_ldm1_011_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 	WRITE_REG(rn, base_addr + pcount);
@@ -11273,7 +11257,7 @@ void SIMIT_IMP(ldm1_ldm1_100_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
@@ -11315,7 +11299,7 @@ void SIMIT_IMP(ldm1_ldm1_101_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 	WRITE_REG(rn, base_addr - pcount);
@@ -11358,7 +11342,7 @@ void SIMIT_IMP(ldm1_ldm1_110_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
@@ -11400,7 +11384,7 @@ void SIMIT_IMP(ldm1_ldm1_111_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 	WRITE_REG(rn, base_addr + pcount);
@@ -11443,7 +11427,7 @@ void SIMIT_IMP(ldm2_ldm2_000_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
@@ -11491,7 +11475,7 @@ void SIMIT_IMP(ldm2_ldm2_010_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
@@ -11539,7 +11523,7 @@ void SIMIT_IMP(ldm2_ldm2_100_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
@@ -11587,7 +11571,7 @@ void SIMIT_IMP(ldm2_ldm2_110_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
@@ -11635,7 +11619,7 @@ void SIMIT_IMP(ldm3_ldm3_000_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
@@ -11688,7 +11672,7 @@ void SIMIT_IMP(ldm3_ldm3_001_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 	WRITE_REG(rn, base_addr - pcount);
@@ -11742,7 +11726,7 @@ void SIMIT_IMP(ldm3_ldm3_010_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
@@ -11795,7 +11779,7 @@ void SIMIT_IMP(ldm3_ldm3_011_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 	WRITE_REG(rn, base_addr + pcount);
@@ -11849,7 +11833,7 @@ void SIMIT_IMP(ldm3_ldm3_100_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
@@ -11902,7 +11886,7 @@ void SIMIT_IMP(ldm3_ldm3_101_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 	WRITE_REG(rn, base_addr - pcount);
@@ -11956,7 +11940,7 @@ void SIMIT_IMP(ldm3_ldm3_110_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
@@ -12009,7 +11993,7 @@ void SIMIT_IMP(ldm3_ldm3_111_) (emulator_t *emu, target_inst_t inst)
 
 
 	pcount = popcount16(reg_mask2)*4 + 4;
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 	WRITE_REG(rn, base_addr + pcount);
@@ -12062,7 +12046,7 @@ void SIMIT_IMP(stm1_stm1_000_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
@@ -12105,7 +12089,7 @@ void SIMIT_IMP(stm1_stm1_001_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 	WRITE_REG(rn, base_addr - pcount);
@@ -12149,7 +12133,7 @@ void SIMIT_IMP(stm1_stm1_010_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
@@ -12192,7 +12176,7 @@ void SIMIT_IMP(stm1_stm1_011_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 	WRITE_REG(rn, base_addr + pcount);
@@ -12236,7 +12220,7 @@ void SIMIT_IMP(stm1_stm1_100_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
@@ -12279,7 +12263,7 @@ void SIMIT_IMP(stm1_stm1_101_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 	WRITE_REG(rn, base_addr - pcount);
@@ -12323,7 +12307,7 @@ void SIMIT_IMP(stm1_stm1_110_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
@@ -12366,7 +12350,7 @@ void SIMIT_IMP(stm1_stm1_111_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 	WRITE_REG(rn, base_addr + pcount);
@@ -12411,7 +12395,7 @@ void SIMIT_IMP(stm2_stm2_000_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount + 4;
 
@@ -12459,7 +12443,7 @@ void SIMIT_IMP(stm2_stm2_010_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr;
 
@@ -12507,7 +12491,7 @@ void SIMIT_IMP(stm2_stm2_100_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr - pcount;
 
@@ -12555,7 +12539,7 @@ void SIMIT_IMP(stm2_stm2_110_) (emulator_t *emu, target_inst_t inst)
 
 	pcount = popcount16(reg_mask)*4;
 
-
+	
 	base_addr = READ_REG(rn);
 	start_addr = base_addr + 4;
 
@@ -12884,7 +12868,7 @@ void SIMIT_IMP(ldc1_ldc1_01_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-
+	
 	address = READ_REG(rn);
 ;
 
@@ -12945,7 +12929,7 @@ void SIMIT_IMP(ldc1_ldc1_10_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-
+	
 	address = READ_REG(rn) - (offset << 2);
 ;
 
@@ -13006,7 +12990,7 @@ void SIMIT_IMP(ldc1_ldc1_11_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-
+	
 	address = READ_REG(rn) + (offset << 2);
 ;
 
@@ -13070,7 +13054,7 @@ void SIMIT_IMP(ldc2_ldc2_00_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-
+	
 	start_addr = base_addr;
 	address = base_addr - (offset << 2);
 ;
@@ -13139,7 +13123,7 @@ void SIMIT_IMP(ldc2_ldc2_01_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-
+	
 	start_addr = base_addr;
 	address = base_addr + (offset << 2);
 ;
@@ -13208,7 +13192,7 @@ void SIMIT_IMP(ldc2_ldc2_10_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-
+	
 	start_addr = address = base_addr - (offset << 2);
 ;
 
@@ -13276,7 +13260,7 @@ void SIMIT_IMP(ldc2_ldc2_11_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-
+	
 	start_addr = address = base_addr + (offset << 2);
 ;
 
@@ -13341,7 +13325,7 @@ void SIMIT_IMP(stc1_stc1_01_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-
+	
 	address = READ_REG(rn);
 ;
 
@@ -13399,7 +13383,7 @@ void SIMIT_IMP(stc1_stc1_10_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-
+	
 	address = READ_REG(rn) - (offset << 2);
 ;
 
@@ -13457,7 +13441,7 @@ void SIMIT_IMP(stc1_stc1_11_) (emulator_t *emu, target_inst_t inst)
 
 
 	offset = imm8;
-
+	
 	address = READ_REG(rn) + (offset << 2);
 ;
 
@@ -13518,7 +13502,7 @@ void SIMIT_IMP(stc2_stc2_00_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-
+	
 	start_addr = base_addr;
 	address = base_addr - (offset << 2);
 ;
@@ -13585,7 +13569,7 @@ void SIMIT_IMP(stc2_stc2_01_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-
+	
 	start_addr = base_addr;
 	address = base_addr + (offset << 2);
 ;
@@ -13652,7 +13636,7 @@ void SIMIT_IMP(stc2_stc2_10_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-
+	
 	start_addr = address = base_addr - (offset << 2);
 ;
 
@@ -13718,7 +13702,7 @@ void SIMIT_IMP(stc2_stc2_11_) (emulator_t *emu, target_inst_t inst)
 
 	offset = imm8;
 	base_addr =  READ_REG(rn);
-
+	
 	start_addr = address = base_addr + (offset << 2);
 ;
 
@@ -14547,3 +14531,4 @@ void SIMIT_IMP(qdsub_) (emulator_t *emu, target_inst_t inst)
 
 
 }
+
