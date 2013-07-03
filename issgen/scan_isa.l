@@ -25,7 +25,7 @@ using std::ifstream;
 using std::string;
 
 #define YYLTYPE issgen::yyltype_t
-#include "parse_isa.hpp"
+#include "parse_isa.h"
 
 #define YY_NO_UNPUT
 
@@ -45,6 +45,7 @@ static void isa_lexerror(char c)
 
 %}
 
+%option prefix="isa_"
 %option c++
 %option yylineno
 %option noyywrap

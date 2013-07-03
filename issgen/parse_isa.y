@@ -40,6 +40,8 @@ extern isa_prog *isa_parser_result;
 
 %}
 
+%define api.prefix isa_
+
 %union {
 
 	char *strval;

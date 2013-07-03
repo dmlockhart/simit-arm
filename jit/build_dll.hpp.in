@@ -13,7 +13,7 @@
     GNU General Public License for more details.
 *************************************************************************/
 
-#define PREFIX "@prefix@"
-#define CXX "@CXX@"
+#define PREFIX "@CMAKE_INSTALL_PREFIX@"
+#define CXX "@CMAKE_CXX_COMPILER@"
 
-#define MORE_OPTION " -O -fpic -shared -pipe -fomit-frame-pointer -finline-limit=5000"
+#define MORE_OPTION "-O -fpic -shared -pipe -fomit-frame-pointer -finline-limit=5000"

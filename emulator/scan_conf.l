@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <cctype>
 #include <vector>
-#include "parse_conf.hpp"
+#include "parse_conf.h"
 
 int mylineno;
 
@@ -30,6 +30,7 @@ static std::vector<char> *lex_str(char *val, unsigned int len);
 
 %}
 
+%option prefix="conf_"
 %option noyywrap
 
 D       [0-9]

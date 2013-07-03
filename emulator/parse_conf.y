@@ -40,6 +40,8 @@ static vector<char> *convert_int_to_vchar(uint32_t);
 
 %}
 
+%define api.prefix conf_
+
 %union {
 	unsigned uval;
 	char *strval;
