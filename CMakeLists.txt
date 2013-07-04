@@ -17,6 +17,7 @@ message(STATUS "Source directory is ${CMAKE_SOURCE_DIR}")
 message(STATUS "Binary directory is ${CMAKE_BINARY_DIR}")
 
 # Configuration
+
 option(ENABLE_LOCAL "Install to local directory" ON)
 option(ENABLE_DEVEL "Enable development features" ON)
 option(ENABLE_DECGEN "Build decoder generator" ON)
@@ -30,12 +31,12 @@ message(STATUS "ENABLE_DECGEN - ${ENABLE_DECGEN}")
 message(STATUS "ENABLE_ISSGEN - ${ENABLE_ISSGEN}")
 message(STATUS "ENABLE_JIT - ${ENABLE_JIT}")
 
-# Set default install directory same as build
+# Set default install directory to build/{Debug|Release}
 if(ENABLE_LOCAL)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(
       CMAKE_INSTALL_PREFIX
-        ${CMAKE_BINARY_DIR}
+        ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}
       CACHE
       PATH
         "CMake install prefix"
