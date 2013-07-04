@@ -1,18 +1,18 @@
-## Users' Guide
+# Users' Guide
 
-* [Installation](#ins)
-* [Quick Start](#qst)
-  * [User-level simulation](#usr)
-  * [System-level simulation](#sys)
-* [Interpreter](#ums)
-  * [Commandline Options](#cmd)
-  * [Built-in Debugger](#dbg)
-* [Dynamic compiled simulation](#dcs)
-* [Related Work](#rlw)
-* [Reference](#rfn)
+* [Installation](#installation)
+* [Quick Start](#quick-start)
+  * [User-level simulation](#user-level-simulation)
+  * [System-level simulation](#system-level-simulation)
+* [Interpreter](#interpreter)
+  * [Commandline Options](#commandline-options)
+  * [Built-in Debugger](#built-in-debugger)
+* [Dynamic compiled simulation](#dynamic-compiled-simulation)
+* [Related Work](#related-work)
+* [Reference](#reference)
 
 
-### Installation
+## Installation
 
 To install, first untar the source by
 
@@ -97,7 +97,8 @@ variable `PATH`, one can simulate the binary by typing
     ema hello_world
 
 The interpreter ema will output "Hello World!" in the standard output.
-Usage of the interpreter is described in more detail in Section [Interpreter](#ums).
+Usage of the interpreter is described in more detail in
+Section [Interpreter](#interpreter).
 Note if you used a regular arm-linux gcc for compilation, ema may report a couple
 of error messages about unimplemented instructions.
 You can safely ignore those message if the program does not involve any
@@ -111,14 +112,14 @@ dynamic-compiled simulator can be invoked by
 In this example, the dynamic-compiled simulator interprets the whole program
 since `hello_world` is too short to trigger run-time compilation.
 A full description of the dynamic-compiled simulator is provided
-in Section [Dynamic compiled simulation](#dcs).
+in Section [Dynamic compiled simulation](#dynamic-compiled-simulation).
 
 ### System-level simulation
 
 SimIt-ARM can boot ARM linux kernels by using `-s` option. Both `ema` and `ema_jit`
 support the option.
 You can download some prebuilt kernel images and ramdisks from
-[here](http://simit-arm.sourceforge.net/index.html#dl).
+[here](http://sourceforge.net/projects/simit-arm/files/simit-arm/).
 
 To try ARM linux kernel, first untar the file by
 
@@ -133,9 +134,9 @@ or
 
     ema_jit -s sa1100.cfg
 
-In this example,the program will boot the "vmlinux" image,
+In this example,the program will boot the `vmlinux` image,
 a Linux 2.4.19 kernel configured for the SA1100 processor.
-The configuration file "sa1100.cfg" specifies some architecture information of the system,
+The configuration file `sa1100.cfg` specifies some architecture information of the system,
 and instructions to initialize the memory and registers.
 
 ## Interpreter
@@ -192,21 +193,21 @@ To start SimIt-ARM in debugging mode type:
 
 The following instructions are available at the debugging prompt:
 
--------- |:-------------------------------------------:|
-h        | print help message
-u [addr] | disassemble 10 instructions from `[addr]`
-           addr can be either a hex address or `pc`,
-           which will disassemble from the current program counter
-d [addr] | dump 256 bytes from memory address `addr`
-g [addr] | run until `pc = addr`
-s [num]  | run until `pc = pc + num*4`
-t [num]  | step `num` instruction(s)
-r[n]     | dump register value(s)
-cpsr     | dump `cpsr` value
-spsr     | dump `spsr` value
-c        | dump instruction counters
-cc       | reset instruction counters
-q        | quit
+| -------- |:-------------------------------------------:|
+| h        | print help message
+| u [addr] | disassemble 10 instructions from `[addr]`
+             addr can be either a hex address or `pc`,
+             which will disassemble from the current program counter
+| d [addr] | dump 256 bytes from memory address `addr`
+| g [addr] | run until `pc = addr`
+| s [num]  | run until `pc = pc + num*4`
+| t [num]  | step `num` instruction(s)
+| r[n]     | dump register value(s)
+| cpsr     | dump `cpsr` value
+| spsr     | dump `spsr` value
+| c        | dump instruction counters
+| cc       | reset instruction counters
+| q        | quit
 
 We again use the program `hello_world` as an example.
 It is often useful to create a dump of the target program before debugging.
@@ -219,9 +220,10 @@ Now start the debugger with the command:
 
     ./ema -d hello_world
 
-One should now see the debugger prompt ">".
+One should now see the debugger prompt `>`.
 At the prompt, one can type any of the commands above.
-We assume that, from our dump file, we learn that the main function starts at address 0x004003e0.
+We assume that, from our dump file, we learn that the main function starts
+at address `0x004003e0`.
 We can instruct the debugger to run until the main function by typing:
 
     >g 4003e0
@@ -244,8 +246,8 @@ To inspect the contents of the registers, we can simply type:
     >r
 
 From the screen printout, we can learn value of the stack
-pointer, $sp, which is used in the sw instruction.
-Assume its value is 0xbfffbda8.
+pointer, `$sp`, which is used in the sw instruction.
+Assume its value is `0xbfffbda8`.
 We can observe the memory contents from this address by typing:
 
     >d bfffbda8
@@ -284,15 +286,15 @@ The command has the following format:
 
 The meaning of the command line arguments are explained below:
 
- ------------- |:-------------------------------------------:|
--h             | To print the usage information and exit.
--v             | To turn on the verbose mode.
--m num         | Million instructions to simulate.
--j num         | To specify additional translation threads to create
--f <file name> | To specify translation server configuration file
--s config      | For system-level simulation, path to configuration file
-file name      | ARM ELF32 program to simulate
-args           | arguments to the program, ignored when -s is given
+| -------------- |:--------------------------------------------------------:|
+| -h             | To print the usage information and exit.
+| -v             | To turn on the verbose mode.
+| -m num         | Million instructions to simulate.
+| -j num         | To specify additional translation threads to create
+| -f <file name> | To specify translation server configuration file
+| -s config      | For system-level simulation, path to configuration file
+| file name      | ARM ELF32 program to simulate
+| args           | arguments to the program, ignored when -s is given
 
 Translation of code blocks into dynamic libraries is performed by GCC.
 Due to the slow speed of GCC in compiling C++ code, for small programs
@@ -327,12 +329,13 @@ the following prior to the start of `ema_jit`.
     decomp_server -p 12345
 
 The server configuration file for the `-s` switch is also a text file.
-The `colibri.cfg` file in the pre-built `linux_images.tar.bz2` is a complete example of its format.
+The `colibri.cfg` file in the pre-built `linux_images.tar.bz2`
+is a complete example of its format.
 
 One need to disable the firewalls for socket communication to work.
 More technical details of the dynamic-compiled simulator
 have been published in some conference papers.
-See [References](#rfn) for information.
+See [References](#reference) for information.
 
 
 ## Related Work
