@@ -1,17 +1,18 @@
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/build_dll.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/build_dll.hpp)
 
-set(LIBDYNARMEMU_SRCS
+set(DYNARMEMU_SRCS
   dyn_arm_emul.cpp
   dyn_arm_emul.hpp
-  arm_gen.cpp
-  arm_gen.hpp
   arm_iss_jit.cpp
   auto_emitc.h
   arch_gen.hpp
+  arm_gen.cpp
+  arm_gen.hpp
 )
 
-add_library(dynarmemu STATIC ${LIBDYNARMEMU_SRCS})
+ISSGEN_COMMAND()
 
+add_library(dynarmemu STATIC ${DYNARMEMU_SRCS} ${DYNARMEMU_ISS_SRCS})
 
 set(EMA_JIT_SRCS
   dyn_main.cpp
