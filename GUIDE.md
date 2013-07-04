@@ -193,7 +193,8 @@ To start SimIt-ARM in debugging mode type:
 
 The following instructions are available at the debugging prompt:
 
-| -------- |:-------------------------------------------:|
+| Command  | Description |
+|----------|---------------------------------------------|
 | h        | print help message
 | u [addr] | disassemble 10 instructions from `[addr]`
              addr can be either a hex address or `pc`,
@@ -286,7 +287,8 @@ The command has the following format:
 
 The meaning of the command line arguments are explained below:
 
-| -------------- |:--------------------------------------------------------:|
+| Argument       | Description |
+|----------------|----------------------------------------------------------|
 | -h             | To print the usage information and exit.
 | -v             | To turn on the verbose mode.
 | -m num         | Million instructions to simulate.
