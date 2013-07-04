@@ -4,3 +4,25 @@ build/
 # Generated from templates
 config.h
 jit/build_dll.hpp
+
+# Flex/Bison
+decgen/parse_idef.cpp
+decgen/parse_idef.h
+decgen/scan_idef.c
+emulator/parse_conf.cpp
+emulator/parse_conf.h
+emulator/scan_conf.cpp
+issgen/parse_isa.cpp
+issgen/parse_isa.h
+issgen/scan_isa.cpp
+
+# issgen
+emulator/arm_dec.h
+emulator/arm_dec2.h
+emulator/arm_inst.def
+emulator/arm_iss.cpp
+emulator/arm_iss.hpp
+
+# decgen
+jit/arm_gen.cpp
+jit/arm_gen.hpp
