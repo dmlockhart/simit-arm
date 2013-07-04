@@ -14,24 +14,12 @@ set(DECGEN_SRCS
   bin_pattern.hpp
   undef.cpp
   inst_type.h
-  scan_idef.l
   scan_idef.c
-  parse_idef.y
   parse_idef.cpp
   parse_idef.h
 )
 
-if(ENABLE_DEVEL)
-  set(SCAN_IDEF_L ${CMAKE_CURRENT_SOURCE_DIR}/scan_idef.l)
-  set(SCAN_IDEF_C ${CMAKE_CURRENT_SOURCE_DIR}/scan_idef.c)
-  FLEX_COMMAND(${SCAN_IDEF_L} ${SCAN_IDEF_C})
-
-  set(PARSE_IDEF_Y ${CMAKE_CURRENT_SOURCE_DIR}/parse_idef.y)
-  set(PARSE_IDEF_CPP ${CMAKE_CURRENT_SOURCE_DIR}/parse_idef.cpp)
-  set(PARSE_IDEF_H ${CMAKE_CURRENT_SOURCE_DIR}/parse_idef.h)
-  BISON_COMMAND(${PARSE_IDEF_Y} ${PARSE_IDEF_CPP} ${PARSE_IDEF_H})
-else()
-  ASSERT_DEVEL(${SCAN_IDEF_C} ${PARSE_IDEF_CPP} ${PARSE_IDEF_H})
-endif()
+FLEX_COMMAND(scan_idef.l scan_idef.c)
+BISON_COMMAND(parse_idef.y parse_idef.cpp parse_idef.h)
 
 add_executable(decgen ${DECGEN_SRCS})

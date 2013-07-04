@@ -10,8 +10,6 @@ issgen/scan_isa.cpp merge=ours
 issgen/parse_isa.cpp merge=ours
 issgen/parse_isa.h merge=ours
 
-emulator/arm_gen.cpp merge=ours
-emulator/arm_gen.hpp merge=ours
 emulator/arm_iss.cpp merge=ours
 emulator/arm_iss.hpp merge=ours
 
@@ -20,3 +18,6 @@ emulator/arm_inst2.def merge=ours
 
 emulator/arm_dec.h merge=ours
 emulator/arm_dec2.h merge=ours
+
+jit/arm_gen.cpp merge=ours
+jit/arm_gen.hpp merge=ours
