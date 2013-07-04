@@ -196,9 +196,7 @@ The following instructions are available at the debugging prompt:
 | Command  | Description |
 |----------|---------------------------------------------|
 | h        | print help message
-| u [addr] | disassemble 10 instructions from `[addr]`
-             addr can be either a hex address or `pc`,
-             which will disassemble from the current program counter
+| u [addr] | disassemble 10 instructions from `[addr]`. `addr` can be either a hex address or `pc`, which will disassemble from the current program counter
 | d [addr] | dump 256 bytes from memory address `addr`
 | g [addr] | run until `pc = addr`
 | s [num]  | run until `pc = pc + num*4`
