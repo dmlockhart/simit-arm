@@ -15,10 +15,8 @@ set(APPLICATION_VERSION "${APPLICATION_VERSION_MAJOR}.${APPLICATION_VERSION_MINO
 message(STATUS "Building ${CMAKE_PROJECT_NAME} ${APPLICATION_VERSION}")
 message(STATUS "Source directory is ${CMAKE_SOURCE_DIR}")
 message(STATUS "Binary directory is ${CMAKE_BINARY_DIR}")
-message(STATUS "Build type is ${CMAKE_BUILD_TYPE}")
 
 # Configuration
-
 option(ENABLE_LOCAL "Install to local directory" ON)
 option(ENABLE_DEVEL "Enable development features" ON)
 option(ENABLE_DECGEN "Build decoder generator" ON)
@@ -32,12 +30,12 @@ message(STATUS "ENABLE_DECGEN - ${ENABLE_DECGEN}")
 message(STATUS "ENABLE_ISSGEN - ${ENABLE_ISSGEN}")
 message(STATUS "ENABLE_JIT - ${ENABLE_JIT}")
 
-# Set default install directory to build/{Debug|Release}
+# Set default install directory same as build
 if(ENABLE_LOCAL)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(
       CMAKE_INSTALL_PREFIX
-        ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}
+        ${CMAKE_BINARY_DIR}
       CACHE
       PATH
         "CMake install prefix"
