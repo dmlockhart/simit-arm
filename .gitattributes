@@ -1,0 +1,22 @@
+decgen/scan_idef.c merge=ours
+decgen/parse_idef.cpp merge=ours
+decgen/parse_idef.h merge=ours
+
+emulator/scan_conf.cpp merge=ours
+emulator/parse_conf.cpp merge=ours
+emulator/parse_conf.h merge=ours
+
+issgen/scan_isa.cpp merge=ours
+issgen/parse_isa.cpp merge=ours
+issgen/parse_isa.h merge=ours
+
+emulator/arm_gen.cpp merge=ours
+emulator/arm_gen.hpp merge=ours
+emulator/arm_iss.cpp merge=ours
+emulator/arm_iss.hpp merge=ours
+
+emulator/arm_inst.def merge=ours
+emulator/arm_inst2.def merge=ours
+
+emulator/arm_dec.h merge=ours
+emulator/arm_dec2.h merge=ours
