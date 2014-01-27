@@ -10,8 +10,8 @@ system-level simulation.
 
 To install, clone git repository
 
-    git clone https://github.com/medvid/SimIt-ARM.git
-    cd SimIt-ARM
+    git clone https://github.com/medvid/simit-arm.git
+    cd simit-arm
 
 Then, create build directory and run CMake from here:
 
