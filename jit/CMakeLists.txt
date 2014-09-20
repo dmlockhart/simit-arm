@@ -37,10 +37,18 @@ target_link_libraries(decomp_server dynarmemu armemu)
 add_dependencies(decomp_server dynarmenu armemu)
 
 install(
+  PROGRAMS
+    ${CMAKE_CURRENT_BINARY_DIR}/ema_jit
+  DESTINATION
+    bin
+)
+
+install(
   FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/arch_jit.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/build_dll.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dyn_arm_emul.hpp
+    ${CMAKE_SOURCE_DIR}/config.h
   DESTINATION
     include
 )
