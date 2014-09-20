@@ -2120,6 +2120,16 @@ execute="
 "
 }
 
+op blx(----00010010:1111:1111:1111:0011:rm) {
+execute="
+	if (READ_REG($rm$) & 1){
+		ABORT2(UndefinedInstrV);
+	}
+	WRITE_REG(LRIND, $pc$-4);
+	WRITE_REG(15, READ_REG($rm$) & 0xFFFFFFFC);
+"
+}
+
 op branch_link(----1011:imm24) {
 execute="
 	WRITE_REG(LRIND, $pc$-4);
