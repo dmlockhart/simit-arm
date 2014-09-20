@@ -1662,7 +1662,8 @@ void do_syscall(armulator *emu, arm_inst_t inst)
 	int syscall_num;
 	bool ret = false;
 
-	syscall_num	= SYSCALL_NUM & 0xff;
+	//syscall_num	= SYSCALL_NUM & 0xff;
+	syscall_num	= PARM(7);
 	if (emu->is_verbose())
 		fprintf(stderr, "got a system call (number : %u, name : %s)\n", syscall_num, arm_get_syscall_name(syscall_num));
 
