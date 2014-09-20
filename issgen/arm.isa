@@ -2496,7 +2496,7 @@ execute="
 op clz(----00010110:1111:rd:1111:0001:rm){
 execute="
 
-	if (emu->is_xscale()) {
+	//if (emu->is_xscale()) {
 		val32=READ_REG($rm$);
 		if(val32==0){
 			WRITE_REG($rd$,32);
@@ -2506,9 +2506,9 @@ execute="
 				rslt32++;
 			WRITE_REG($rd$,rslt32);
 		}
-	}
-	else
-		ABORT2(UndefinedInstrV);
+	//}
+	//else
+	//	ABORT2(UndefinedInstrV);
 "
 }
 
