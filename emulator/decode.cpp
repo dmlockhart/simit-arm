@@ -570,6 +570,21 @@ static char *disasm_branch_link(arm_inst_t inst, arm_addr_t pc, char *buf)
 	return buf;
 }
 
+static char *disasm_branch_exchange(arm_inst_t inst, arm_addr_t pc, char *buf)
+{
+	int32_t offset = (int32_t)(inst<<8)>>6;
+	buf += sprintf(buf, "bx%s %s;\n",
+		arm_conditional[COND], arm_regnames[RMFLD]);
+	return buf;
+}
+
+static char *disasm_blx(arm_inst_t inst, arm_addr_t pc, char *buf)
+{
+	int32_t offset = (int32_t)(inst<<8)>>6;
+	buf += sprintf(buf, "blx2%s %s;\n",
+		arm_conditional[COND], arm_regnames[RMFLD]);
+	return buf;
+}
 
 /* status registers */
 
