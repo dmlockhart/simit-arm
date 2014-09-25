@@ -867,6 +867,9 @@ static void arm_swap_stat(struct stat *buf)
 bool arm_syscall_stat(armulator *emu)
 {
 
+  // hack: don't implement
+  return true;
+
 SYSCALL_STAGE_0
   {
 	emu->syscall_open_addr = PARM(0);
@@ -971,6 +974,9 @@ SYSCALL_STAGE_FALSE
 
 bool arm_syscall_fstat(armulator *emu)
 {
+
+  // hack
+  return true;
 
 SYSCALL_STAGE_0
   {
