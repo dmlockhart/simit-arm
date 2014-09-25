@@ -180,6 +180,16 @@ void arm_emulator::load_elf32(const char *filename)
 					GetSymbolName(shdr[i].sh_name, string_table),
 					new_section_size, new_section_addr);
 
+        // hack: we set data_base and data_size based on the the bss
+        // section
+        char *symbol_name = GetSymbolName( shdr[i].sh_name, string_table );
+        if ( strcmp( symbol_name, ".bss" ) == 0 ) {
+          fprintf( stderr, ".bss section found addr=%08x len=%08x\n",
+                   new_section_addr, new_section_size );
+          data_base = new_section_addr;
+          data_size = new_section_size;
+        }
+
 				new_section = malloc(new_section_size);
 				LoadSection(shdr_new_section, new_section, fobj);
 
