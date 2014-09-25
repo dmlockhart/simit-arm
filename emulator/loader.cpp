@@ -165,7 +165,9 @@ void arm_emulator::load_elf32(const char *filename)
 		new_section_type = GetSectionType(shdr_new_section);
 		new_section_flags = GetSectionFlags(shdr_new_section);
 		if ((new_section_type == SHT_PROGBITS) ||
-			(new_section_type == SHT_NOBITS))
+			(new_section_type == SHT_NOBITS)     ||
+      (new_section_type == SHT_INIT_ARRAY) ||
+      (new_section_type == SHT_FINI_ARRAY))
 		{
 			new_section_size =
 				shdr_new_section ? GetSectionSize(shdr_new_section) : 0;
