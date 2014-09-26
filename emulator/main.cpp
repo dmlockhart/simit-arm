@@ -173,7 +173,9 @@ int main(int argc, char *argv[], char *envp[])
 			uint64_t icount;
 
 			if (max_inum != (uint64_t)-1)
-				ema->set_max_count(max_inum << 20);
+        // note: we're multiplying max insts by 10^6 instead of 2^20 for
+        // consistency across other simulators
+				ema->set_max_count( max_inum * 1000000 );
 
 			if (!usr_level) term_init();
 
