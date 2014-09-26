@@ -1205,9 +1205,15 @@ execute="
 "
 }
 
+/* berkin: note for smull, smull_s, smlal, smlal_s
+ * we need to cast the values to int32 first before casting them to int64.
+ * Without this, the sign extension doesn't work.
+ */
+
 op smull(----00001100:rn:rd:rs:1001:rm) {
 execute="
-    rslt64 = (int64_t)READ_REG($rm$) * (int64_t)READ_REG($rs$);
+    rslt64 = (int64_t) ((int32_t) READ_REG($rm$)) *
+             (int64_t) ((int32_t) READ_REG($rs$));
     WRITE_REG($rn$, (uint32_t)(rslt64>>32));
     WRITE_REG($rd$, (uint32_t)rslt64);
 "
@@ -1215,7 +1221,8 @@ execute="
 
 op smull_s(----00001101:rn:rd:rs:1001:rm) {
 execute="
-    rslt64 = (int64_t)READ_REG($rm$) * (int64_t)READ_REG($rs$);
+    rslt64 = (int64_t) ((int32_t) READ_REG($rm$)) *
+             (int64_t) ((int32_t) READ_REG($rs$));
 	ASGN_NZ((uint32_t)rslt64);
     WRITE_REG($rn$, (uint32_t)(rslt64>>32));
     WRITE_REG($rd$, (uint32_t)rslt64);
@@ -1225,7 +1232,8 @@ execute="
 op smlal(----00001110:rn:rd:rs:1001:rm) {
 execute="
 	rslt64 = ((uint64_t)READ_REG($rn$)<<32) + (uint64_t)READ_REG($rd$);
-    rslt64 = (int64_t)READ_REG($rm$) * (int64_t)READ_REG($rs$)+rslt64;
+    rslt64 = (int64_t) ((int32_t) READ_REG($rm$)) *
+             (int64_t) ((int32_t) READ_REG($rs$)) + rslt64;
     WRITE_REG($rn$, (uint32_t)(rslt64>>32));
     WRITE_REG($rd$, (uint32_t)rslt64);
 "
@@ -1234,7 +1242,8 @@ execute="
 op smlal_s(----00001111:rn:rd:rs:1001:rm) {
 execute="
 	rslt64 = ((uint64_t)READ_REG($rn$)<<32) + (uint64_t)READ_REG($rd$);
-    rslt64 = (int64_t)READ_REG($rm$) * (int64_t)READ_REG($rs$)+rslt64;
+    rslt64 = (int64_t) ((int32_t) READ_REG($rm$)) *
+             (int64_t) ((int32_t) READ_REG($rs$)) + rslt64;
     WRITE_REG($rn$, (uint32_t)(rslt64>>32));
     WRITE_REG($rd$, (uint32_t)rslt64);
 	ASGN_NZ((uint32_t)rslt64);
