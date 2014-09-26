@@ -265,6 +265,18 @@ void arm_emulator::load_program(const char *filename,
 	stack_ptr = stack_base - MAX_ENVIRON;
 	write_gpr(SPIND, stack_ptr);
 
+//======================================================================
+// DMLOCKHART: TRY TO GET STACKS MATCHING
+//======================================================================
+bool MATCH_PYDGIN = true;
+
+  // STACK_SIZE only tells use the maximum size the stack is ever
+  // allowed to be during execution, not the initial stack size
+  fprintf(stderr, "*********************************************\n");
+  fprintf(stderr, "stack base 0x%x\n", stack_base);
+  fprintf(stderr, "stack min  0x%x\n", stack_ptr );
+  fprintf(stderr, "stack size %d\n",   MAX_ENVIRON);
+
 	/*write argc to stack*/
 	mem->write_word(stack_ptr, argc);
 	write_gpr(1, argc);
@@ -277,11 +289,19 @@ void arm_emulator::load_program(const char *filename,
 
 	/*skip env pointer array*/
 	envAddr = stack_ptr;
+if (not MATCH_PYDGIN) { // DMLOCKHART: TRY TO GET STACKS MATCHING
 	for (ii=0; envp[ii]; ii++)
 		stack_ptr += 4;
+} else {
+  fprintf(stderr, "*********************************************\n");
+  fprintf(stderr, "* WARNING: NOT LOADING ENV VARS ONTO STACK! *\n");
+  fprintf(stderr, "*********************************************\n");
+}
 	stack_ptr += 4;
 
+
 	/*write argv to stack*/
+	uint32_t arg_data = stack_ptr;
 	for (ii=0; ii<argc; ii++) {
 		mem->write_word(argAddr+ii*4, stack_ptr);
 		mem->write_block(argv[ii], stack_ptr, strlen(argv[ii]));
@@ -292,14 +312,32 @@ void arm_emulator::load_program(const char *filename,
 	/*0 already at the end argv pointer array*/
 
 	/*write env to stack*/
+	uint32_t env_data = stack_ptr;
 	for (ii=0; envp[ii]; ii++) {
+if (not MATCH_PYDGIN) { // DMLOCKHART: TRY TO GET STACKS MATCHING
 		mem->write_word(envAddr+ii*4, stack_ptr);
 		mem->write_block(envp[ii], stack_ptr, strlen(envp[ii]));
 		/*0 already at the end of the string as done by initialization*/
 		stack_ptr += strlen(envp[ii])+1;
+}
+  // DMLOCKHART: UNCOMMENT TO PRINT ENVIRONMENT VARS
+  //fprintf(stderr, "ENV: %s\n", envp[ii]);
+
 	}
 
 	/*0 already at the end argv pointer array*/
+
+  fprintf(stderr, "env data   %d\n", stack_ptr - env_data );
+  fprintf(stderr, "arg data   %d\n", env_data  - arg_data );
+  fprintf(stderr, "envp       %d\n", arg_data  - envAddr );
+  fprintf(stderr, "argv       %d\n", envAddr   - argAddr );
+  fprintf(stderr, "argc       %d\n", argAddr   - (stack_base - MAX_ENVIRON) );
+  fprintf(stderr, "----\n" );
+  fprintf(stderr, "env data   0x%x\n", env_data );
+  fprintf(stderr, "arg data   0x%x\n", arg_data );
+  fprintf(stderr, "envp       0x%x\n", envAddr );
+  fprintf(stderr, "argv       0x%x\n", argAddr );
+  fprintf(stderr, "argc       0x%x\n", stack_base - MAX_ENVIRON );
 
 	clear_trap(mem);
 
@@ -316,6 +354,10 @@ void arm_emulator::load_program(const char *filename,
 
 	syscall_set_brk(abrk);
 	syscall_set_mmap_brk(MMAP_BASE);
+
+  // DMLOCKHART
+  debug_dump_registers(stderr);
+  fprintf(stderr, "*********************************************\n");
 }
 
 
