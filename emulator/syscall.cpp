@@ -502,6 +502,11 @@ SYSCALL_STAGE_2
 	flags = PARM(1);
 	mode = PARM(2);
 
+  // hack: erasing O_DIRECTORY which is probably mapped to O_BINARY in
+  // newlib. Without this, open can get an ENOTDIR
+
+  flags &= ~O_DIRECTORY;
+
 	if (emu->is_verbose())
 		fprintf(stderr, "open(pathname=\"%s\", flags=%d, mode=%d)\n",
 			(char *)emu->syscall_buf, flags, (int)mode);
